@@ -20,742 +20,133 @@
 
   <style>
     :root {
-      --bg: #EEF2F0;
-      --surface: #F4F6F5;
-      --card: #FFFFFF;
-      --ink: #14221E;
-      --muted: #5C6B66;
-      --line: #DDE5E1;
-      --primary: #0E7C66;
-      --primary-soft: #E3F2ED;
-      --primary-strong: #0a5f4e;
-      --husband: #3B5BDB;
-      --husband-soft: #E7ECFD;
-      --wife: #D6336C;
-      --wife-soft: #FCE7EF;
-      --danger: #E03131;
-      --danger-soft: #FCE9E9;
-      --warn: #F08C00;
+      --bg: #EEF2F0; --surface: #F4F6F5; --card: #FFFFFF; --ink: #14221E; --muted: #5C6B66;
+      --line: #DDE5E1; --primary: #0E7C66; --primary-soft: #E3F2ED; --primary-strong: #0a5f4e;
+      --husband: #3B5BDB; --husband-soft: #E7ECFD; --wife: #D6336C; --wife-soft: #FCE7EF;
+      --danger: #E03131; --danger-soft: #FCE9E9; --warn: #F08C00;
       --shadow: 0 1px 2px rgba(20, 34, 30, .06), 0 8px 24px rgba(20, 34, 30, .06);
     }
 
     [data-theme="dark"] {
-      --bg: #0E1512;
-      --surface: #121C18;
-      --card: #18241F;
-      --ink: #E8EFEC;
-      --muted: #9AB0A8;
-      --line: #26352F;
-      --primary: #2FB99B;
-      --primary-soft: #10312A;
-      --primary-strong: #48d3b4;
-      --husband: #7C93F2;
-      --husband-soft: #1B2747;
-      --wife: #F06595;
-      --wife-soft: #3A1726;
-      --danger: #FF6B6B;
-      --danger-soft: #3A1A1A;
-      --warn: #FFB454;
+      --bg: #0E1512; --surface: #121C18; --card: #18241F; --ink: #E8EFEC; --muted: #9AB0A8;
+      --line: #26352F; --primary: #2FB99B; --primary-soft: #10312A; --primary-strong: #48d3b4;
+      --husband: #7C93F2; --husband-soft: #1B2747; --wife: #F06595; --wife-soft: #3A1726;
+      --danger: #FF6B6B; --danger-soft: #3A1A1A; --warn: #FFB454;
       --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 12px 30px rgba(0, 0, 0, .35);
     }
 
-    * {
-      box-sizing: border-box
-    }
-
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--ink);
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-      -webkit-font-smoothing: antialiased;
-      font-size: 14px;
-      line-height: 1.45
-    }
-
-    h1,
-    h2,
-    h3 {
-      font-family: "Bricolage Grotesque", Inter, system-ui, sans-serif;
-      margin: 0;
-      letter-spacing: -.02em
-    }
-
-    .num {
-      font-variant-numeric: tabular-nums;
-      font-feature-settings: "tnum"
-    }
-
-    button {
-      font-family: inherit;
-      cursor: pointer
-    }
-
-    input,
-    select,
-    textarea {
-      font-family: inherit;
-      font-size: 14px
-    }
-
-    a {
-      color: var(--primary)
-    }
-
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 30;
-      background: var(--surface);
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 12px 18px
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-family: "Bricolage Grotesque";
-      font-weight: 800;
-      font-size: 18px
-    }
-
-    .brand .dot {
-      width: 26px;
-      height: 26px;
-      border-radius: 8px;
-      background: var(--primary);
-      display: grid;
-      place-items: center;
-      color: #fff;
-      font-size: 15px
-    }
-
-    .spacer {
-      flex: 1
-    }
-
-    .seg {
-      display: flex;
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 3px;
-      gap: 3px
-    }
-
-    .seg button {
-      border: 0;
-      background: transparent;
-      color: var(--muted);
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 13px
-    }
-
-    .seg button.active {
-      color: #fff
-    }
-
-    .seg button.active[data-u="Husband"] {
-      background: var(--husband)
-    }
-
-    .seg button.active[data-u="Wife"] {
-      background: var(--wife)
-    }
-
-    .icon-btn {
-      border: 1px solid var(--line);
-      background: var(--card);
-      color: var(--ink);
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      font-size: 16px
-    }
-
-    .wrap {
-      max-width: 1120px;
-      margin: 0 auto;
-      padding: 18px
-    }
-
-    .tabs {
-      display: flex;
-      gap: 6px;
-      overflow-x: auto;
-      padding: 4px 14px 0;
-      background: var(--surface);
-      position: sticky;
-      top: 61px;
-      z-index: 20;
-      border-bottom: 1px solid var(--line)
-    }
-
-    .tabs button {
-      white-space: nowrap;
-      border: 0;
-      background: transparent;
-      color: var(--muted);
-      font-weight: 600;
-      padding: 10px 12px;
-      border-bottom: 2px solid transparent
-    }
-
-    .tabs button.active {
-      color: var(--ink);
-      border-bottom-color: var(--primary)
-    }
-
-    .card {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 18px;
-      box-shadow: var(--shadow)
-    }
-
-    .grid {
-      display: grid;
-      gap: 16px
-    }
-
-    .g3 {
-      grid-template-columns: repeat(3, 1fr)
-    }
-
-    .g2 {
-      grid-template-columns: repeat(2, 1fr)
-    }
-
-    @media(max-width:820px) {
-
-      .g3,
-      .g2 {
-        grid-template-columns: 1fr
-      }
-    }
-
-    .label {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .05em
-    }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 3px 9px;
-      border-radius: 999px;
-      background: var(--primary-soft);
-      color: var(--primary-strong)
-    }
-
-    .pill.h {
-      background: var(--husband-soft);
-      color: var(--husband)
-    }
-
-    .pill.w {
-      background: var(--wife-soft);
-      color: var(--wife)
-    }
-
-    .pill.danger {
-      background: var(--danger-soft);
-      color: var(--danger)
-    }
-
-    .btn {
-      border: 1px solid var(--line);
-      background: var(--card);
-      color: var(--ink);
-      padding: 9px 14px;
-      border-radius: 10px;
-      font-weight: 600
-    }
-
-    .btn.primary {
-      background: var(--primary);
-      border-color: var(--primary);
-      color: #fff
-    }
-
-    .btn.ghost {
-      background: transparent
-    }
-
-    .btn.sm {
-      padding: 6px 10px;
-      font-size: 13px
-    }
-
-    .btn:hover {
-      filter: brightness(.98)
-    }
-
-    .hero {
-      display: grid;
-      grid-template-columns: 1.3fr 1fr;
-      gap: 24px;
-      align-items: center
-    }
-
-    @media(max-width:820px) {
-      .hero {
-        grid-template-columns: 1fr
-      }
-    }
-
-    .balance {
-      font-family: "Bricolage Grotesque";
-      font-weight: 800;
-      font-size: clamp(34px, 6vw, 52px);
-      line-height: 1;
-      letter-spacing: -.03em
-    }
-
-    .balance.pos {
-      color: var(--primary)
-    }
-
-    .balance.neg {
-      color: var(--danger)
-    }
-
-    .splitbar {
-      height: 14px;
-      border-radius: 999px;
-      overflow: hidden;
-      display: flex;
-      background: var(--line)
-    }
-
-    .splitbar .h {
-      background: var(--husband)
-    }
-
-    .splitbar .w {
-      background: var(--wife)
-    }
-
-    .mini {
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
-      margin-top: 14px
-    }
-
-    .mini .box {
-      flex: 1;
-      min-width: 120px;
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 10px 12px
-    }
-
-    .mini .v {
-      font-weight: 700;
-      font-size: 17px
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse
-    }
-
-    .tbl-wrap {
-      overflow-x: auto
-    }
-
-    th,
-    td {
-      text-align: left;
-      padding: 11px 10px;
-      border-bottom: 1px solid var(--line);
-      font-size: 13px;
-      white-space: nowrap
-    }
-
-    th {
-      color: var(--muted);
-      font-weight: 600;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: .04em
-    }
-
-    tr:last-child td {
-      border-bottom: 0
-    }
-
-    .row-act {
-      display: flex;
-      gap: 6px
-    }
-
-    .link {
-      color: var(--primary);
-      background: none;
-      border: 0;
-      font-weight: 600;
-      padding: 2px 4px
-    }
-
-    .link.del {
-      color: var(--danger)
-    }
-
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin-bottom: 12px
-    }
-
-    .field label {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--ink)
-    }
-
-    .field input,
-    .field select,
-    .field textarea {
-      border: 1px solid var(--line);
-      background: var(--surface);
-      color: var(--ink);
-      border-radius: 10px;
-      padding: 10px 12px;
-      outline: none
-    }
-
-    .field input:focus,
-    .field select:focus,
-    .field textarea:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px var(--primary-soft)
-    }
-
-    .row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px
-    }
-
-    @media(max-width:560px) {
-      .row {
-        grid-template-columns: 1fr
-      }
-    }
-
-    .check {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 500
-    }
-
-    .check input {
-      width: 18px;
-      height: 18px
-    }
-
-    .overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(8, 16, 13, .45);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 60;
-      padding: 16px
-    }
-
-    .overlay.show {
-      display: flex
-    }
-
-    .modal {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      width: 100%;
-      max-width: 560px;
-      max-height: 90vh;
-      overflow: auto;
-      box-shadow: var(--shadow)
-    }
-
-    .modal-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 18px;
-      border-bottom: 1px solid var(--line);
-      position: sticky;
-      top: 0;
-      background: var(--card)
-    }
-
-    .modal-body {
-      padding: 18px
-    }
-
-    .modal-foot {
-      display: flex;
-      gap: 10px;
-      justify-content: flex-end;
-      padding: 14px 18px;
-      border-top: 1px solid var(--line);
-      position: sticky;
-      bottom: 0;
-      background: var(--card)
-    }
-
-    .cal-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 6px
-    }
-
-    .cal-grid .dow {
-      text-align: center;
-      font-size: 11px;
-      color: var(--muted);
-      font-weight: 600;
-      padding: 4px 0
-    }
-
-    .cell {
-      aspect-ratio: 1/1;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 6px;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      cursor: pointer;
-      background: var(--surface);
-      overflow: hidden
-    }
-
-    .cell.empty {
-      background: transparent;
-      border: 0;
-      cursor: default
-    }
-
-    .cell .d {
-      font-size: 12px;
-      font-weight: 600
-    }
-
-    .cell .amt {
-      font-size: 11px;
-      font-weight: 700
-    }
-
-    .cell:hover {
-      border-color: var(--primary)
-    }
-
-    .chartbox {
-      position: relative;
-      height: 260px
-    }
-
-    #toasts {
-      position: fixed;
-      right: 16px;
-      bottom: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      z-index: 80
-    }
-
-    .toast {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-left: 4px solid var(--primary);
-      border-radius: 10px;
-      padding: 12px 14px;
-      box-shadow: var(--shadow);
-      max-width: 320px;
-      font-weight: 500
-    }
-
-    .toast.warn {
-      border-left-color: var(--warn)
-    }
-
-    .toast.danger {
-      border-left-color: var(--danger)
-    }
-
-    .empty {
-      color: var(--muted);
-      text-align: center;
-      padding: 26px
-    }
-
-    .head-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 16px;
-      flex-wrap: wrap
-    }
-
-    .filters {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: end;
-      margin-bottom: 14px
-    }
-
-    .filters .field {
-      margin-bottom: 0;
-      min-width: 140px
-    }
-
-    .banner {
-      background: var(--danger-soft);
-      border: 1px solid var(--danger);
-      color: var(--danger);
-      border-radius: 12px;
-      padding: 12px 14px;
-      font-weight: 600;
-      margin-bottom: 16px;
-      display: flex;
-      gap: 10px;
-      align-items: flex-start
-    }
+    * { box-sizing: border-box }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.45 }
+    h1, h2, h3 { font-family: "Bricolage Grotesque", Inter, system-ui, sans-serif; margin: 0; letter-spacing: -.02em }
+    .num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" }
+    button { font-family: inherit; cursor: pointer }
+    input, select, textarea { font-family: inherit; font-size: 14px }
+    a { color: var(--primary) }
+
+    .topbar { position: sticky; top: 0; z-index: 30; background: var(--surface); border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; padding: 12px 18px }
+    .brand { display: flex; align-items: center; gap: 10px; font-family: "Bricolage Grotesque"; font-weight: 800; font-size: 18px }
+    .brand .dot { width: 26px; height: 26px; border-radius: 8px; background: var(--primary); display: grid; place-items: center; color: #fff; font-size: 15px }
+    .spacer { flex: 1 }
+    .icon-btn { border: 1px solid var(--line); background: var(--card); color: var(--ink); width: 38px; height: 38px; border-radius: 10px; font-size: 16px }
+
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 18px }
+    .tabs { display: flex; gap: 6px; overflow-x: auto; padding: 4px 14px 0; background: var(--surface); position: sticky; top: 61px; z-index: 20; border-bottom: 1px solid var(--line); scrollbar-width: none; -ms-overflow-style: none }
+    .tabs::-webkit-scrollbar { display: none }
+    .tabs button { white-space: nowrap; border: 0; background: transparent; color: var(--muted); font-weight: 600; padding: 10px 12px; border-bottom: 2px solid transparent }
+    .tabs button.active { color: var(--ink); border-bottom-color: var(--primary) }
+
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px; box-shadow: var(--shadow) }
+    .grid { display: grid; gap: 16px }
+    .g2 { grid-template-columns: repeat(2, 1fr) }
+    @media(max-width:820px) { .g2 { grid-template-columns: 1fr } }
+    .label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em }
+    .pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: var(--primary-soft); color: var(--primary-strong) }
+    .pill.h { background: var(--husband-soft); color: var(--husband) }
+    .pill.w { background: var(--wife-soft); color: var(--wife) }
+    .pill.danger { background: var(--danger-soft); color: var(--danger) }
+    .btn { border: 1px solid var(--line); background: var(--card); color: var(--ink); padding: 9px 14px; border-radius: 10px; font-weight: 600 }
+    .btn.primary { background: var(--primary); border-color: var(--primary); color: #fff }
+    .btn.ghost { background: transparent }
+    .btn.sm { padding: 6px 10px; font-size: 13px }
+    .btn:hover { filter: brightness(.98) }
+
+    .hero { display: grid; grid-template-columns: 1.3fr 1fr; gap: 24px; align-items: center }
+    @media(max-width:820px) { .hero { grid-template-columns: 1fr } }
+    .balance { font-family: "Bricolage Grotesque"; font-weight: 800; font-size: clamp(34px, 6vw, 52px); line-height: 1; letter-spacing: -.03em }
+    .balance.pos { color: var(--primary) }
+    .balance.neg { color: var(--danger) }
+    .splitbar { height: 14px; border-radius: 999px; overflow: hidden; display: flex; background: var(--line) }
+    .splitbar .h { background: var(--husband) }
+    .splitbar .w { background: var(--wife) }
+    .mini { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 14px }
+    .mini .box { flex: 1; min-width: 130px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px }
+    .mini .v { font-weight: 700; font-size: 17px }
+
+    table { width: 100%; border-collapse: collapse }
+    .tbl-wrap { overflow-x: auto }
+    th, td { text-align: left; padding: 11px 10px; border-bottom: 1px solid var(--line); font-size: 13px; white-space: nowrap }
+    th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .04em }
+    tr:last-child td { border-bottom: 0 }
+    .row-act { display: flex; gap: 6px }
+    .link { color: var(--primary); background: none; border: 0; font-weight: 600; padding: 2px 4px }
+    .link.del { color: var(--danger) }
+
+    .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px }
+    .field label { font-size: 13px; font-weight: 600; color: var(--ink) }
+    .field input, .field select, .field textarea { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 10px; padding: 10px 12px; outline: none }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft) }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px }
+    @media(max-width:560px) { .row { grid-template-columns: 1fr } }
+    .check { display: flex; align-items: center; gap: 8px; font-weight: 500 }
+    .check input { width: 18px; height: 18px }
+
+    .overlay { position: fixed; inset: 0; background: rgba(8, 16, 13, .45); display: none; align-items: center; justify-content: center; z-index: 60; padding: 16px }
+    .overlay.show { display: flex }
+    .modal { background: var(--card); border: 1px solid var(--line); border-radius: 18px; width: 100%; max-width: 560px; max-height: 90vh; overflow: auto; box-shadow: var(--shadow) }
+    .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--card) }
+    .modal-body { padding: 18px }
+    .modal-foot { display: flex; gap: 10px; justify-content: flex-end; padding: 14px 18px; border-top: 1px solid var(--line); position: sticky; bottom: 0; background: var(--card) }
+
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px }
+    .cal-grid .dow { text-align: center; font-size: 11px; color: var(--muted); font-weight: 600; padding: 4px 0 }
+    .cell { aspect-ratio: 1/1; border: 1px solid var(--line); border-radius: 10px; padding: 6px; display: flex; flex-direction: column; gap: 2px; cursor: pointer; background: var(--surface); overflow: hidden }
+    .cell.empty { background: transparent; border: 0; cursor: default }
+    .cell .d { font-size: 12px; font-weight: 600 }
+    .cell .amt { font-size: 11px; font-weight: 700 }
+    .cell:hover { border-color: var(--primary) }
+
+    .chartbox { position: relative; height: 260px }
+    #toasts { position: fixed; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 8px; z-index: 80 }
+    .toast { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--primary); border-radius: 10px; padding: 12px 14px; box-shadow: var(--shadow); max-width: 320px; font-weight: 500 }
+    .toast.warn { border-left-color: var(--warn) }
+    .toast.danger { border-left-color: var(--danger) }
+    .empty { color: var(--muted); text-align: center; padding: 26px }
+    .head-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; flex-wrap: wrap }
+    .filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; margin-bottom: 14px }
+    .filters .field { margin-bottom: 0; min-width: 140px }
+    .banner { background: var(--danger-soft); border: 1px solid var(--danger); color: var(--danger); border-radius: 12px; padding: 12px 14px; font-weight: 600; margin-bottom: 16px; display: flex; gap: 10px; align-items: flex-start }
 
     /* gate (login / setup) */
-    #gate {
-      position: fixed;
-      inset: 0;
-      background: var(--bg);
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 18px
-    }
+    #gate { position: fixed; inset: 0; background: var(--bg); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 18px }
+    #gate .card { max-width: 420px; width: 100% }
+    .err { color: var(--danger); font-size: 13px; min-height: 18px; margin-top: 4px }
+    .idpick { display: flex; gap: 10px; margin-bottom: 16px }
+    .idpick button { flex: 1; border: 2px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 12px; padding: 16px; font-weight: 700; font-size: 16px }
+    .idpick button.sel[data-u="Husband"] { border-color: var(--husband); background: var(--husband-soft); color: var(--husband) }
+    .idpick button.sel[data-u="Wife"] { border-color: var(--wife); background: var(--wife-soft); color: var(--wife) }
+    .pin-input { font-size: 30px; letter-spacing: 14px; text-align: center; padding: 12px !important; font-weight: 700 }
 
-    #gate .card {
-      max-width: 420px;
-      width: 100%
-    }
-
-    .tab2 {
-      display: flex;
-      gap: 6px;
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 3px;
-      margin-bottom: 16px
-    }
-
-    .tab2 button {
-      flex: 1;
-      border: 0;
-      background: transparent;
-      color: var(--muted);
-      font-weight: 600;
-      padding: 8px;
-      border-radius: 8px
-    }
-
-    .tab2 button.active {
-      background: var(--card);
-      color: var(--ink);
-      box-shadow: var(--shadow)
-    }
-
-    .err {
-      color: var(--danger);
-      font-size: 13px;
-      min-height: 18px;
-      margin-top: 4px
-    }
-
-    .bill-item-card {
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 12px;
-      position: relative;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-    }
-
-    .bill-item-card .remove-btn {
-      position: absolute;
-      top: -10px;
-      right: -10px;
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      font-size: 12px;
-      color: var(--danger);
-      border-color: var(--danger);
-      background: var(--card);
-      box-shadow: var(--shadow);
-      z-index: 10;
-    }
-
-    .bill-item-card .remove-btn:hover {
-      background: var(--danger);
-      color: #fff;
-    }
-
-    .tabs {
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-    }
-
-    .tabs::-webkit-scrollbar {
-      display: none;
-    }
+    /* transfer + bill items */
+    .transfer-dir { display: flex; align-items: center; gap: 10px; justify-content: center; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-bottom: 14px; font-weight: 600 }
+    .bill-item-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 12px; position: relative }
+    .bill-item-card .remove-btn { position: absolute; top: -10px; right: -10px; width: 26px; height: 26px; border-radius: 50%; font-size: 12px; color: var(--danger); border-color: var(--danger); background: var(--card); box-shadow: var(--shadow); z-index: 10 }
+    .bill-item-card .remove-btn:hover { background: var(--danger); color: #fff }
 
     @media(max-width: 600px) {
-      .modal {
-        max-height: 95vh;
-        border-radius: 12px;
-      }
-
-      .brand {
-        font-size: 16px;
-      }
-
-      .balance {
-        font-size: 32px;
-      }
-
-      .btn {
-        padding: 10px 14px;
-      }
-
-      .hero {
-        gap: 16px;
-      }
+      .topbar { padding: 10px 14px }
+      .brand { font-size: 16px }
+      .modal { max-height: 95vh; border-radius: 12px }
+      .balance { font-size: 32px }
     }
   </style>
 </head>
@@ -770,10 +161,7 @@
     <div class="topbar">
       <div class="brand"><span class="dot">₹</span> Household Finance</div>
       <div class="spacer"></div>
-      <div class="seg" id="userSeg">
-        <button data-u="Husband" onclick="setUser('Husband')">Husband</button>
-        <button data-u="Wife" onclick="setUser('Wife')">Wife</button>
-      </div>
+      <span class="pill" id="idPill" style="font-size:13px">—</span>
       <button class="icon-btn" id="themeBtn" title="Toggle theme" onclick="toggleTheme()">🌙</button>
       <button class="icon-btn" title="Log out" onclick="logout()">⏻</button>
     </div>
@@ -796,9 +184,8 @@
 
   <script>
     /* ============================================================================
-       ★ STEP 1 — paste your Supabase details here (Supabase → Settings → API)
-       The anon key is safe to put here: your data is protected by the security
-       rules in schema.sql, not by hiding this key.
+       Your Supabase project (anon key is safe here — data is protected by the
+       security rules in schema.sql).
        ============================================================================ */
     const SUPABASE_URL = "https://zleyriinghngqusngrib.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZXlyaWluZ2huZ3F1c25ncmliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5NjkwNjQsImV4cCI6MjA5NjU0NTA2NH0.9sQqsDPTGYfrRrrJR4viJGgUaipHf2nNlbTP2MZ8CMQ";
@@ -809,17 +196,11 @@
        DATA + HELPERS
        --------------------------------------------------------------------------- */
     const UNITS = ["Units", "Kg", "g", "L", "ml", "Dozen", "Pack", "Other"];
-    const DEFAULT_CATEGORIES = {
-      "Grocery": ["Milk", "Bread", "Vegetables", "Fruits", "Rice", "Cooking Oil", "Grains", "Detergent", "Hand Wash", "Water Bottle"],
-      "Utilities": ["Electricity Bill", "Water Bill", "Gas Bill", "Internet Bill", "House Rent"],
-      "EMI": ["Two Wheeler", "Four Wheeler", "Personal Loan", "Medi-Claim", "Life Insurance", "SIP"],
-      "Transportation": ["Fuel", "Taxi", "Train", "Bus", "Metro", "Parking"],
-      "Healthcare": ["Medicines", "Doctor Consultation", "Medical Tests"]
-    };
 
     let state = {
-      settings: { theme: "light", currentUser: "Husband", currency: "₹" },
-      household: null, incomes: [], expenses: [], categories: {}, budgets: {}
+      settings: { theme: "light", currency: "₹" },
+      household: null, me: null,
+      incomes: [], expenses: [], transfers: [], categories: {}, budgets: {}
     };
 
     const $ = s => document.querySelector(s);
@@ -827,66 +208,54 @@
     const todayISO = () => new Date().toISOString().slice(0, 10);
     const monthKey = d => (d || "").slice(0, 7);
     const curMonth = () => todayISO().slice(0, 7);
+    const partner = () => state.me === "Husband" ? "Wife" : "Husband";
+    const cls = l => l === "Husband" ? "h" : "w";
     function fmt(n) { const v = Number(n || 0); const s = Math.abs(v).toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 2 }); return (v < 0 ? "-" : "") + state.settings.currency + s; }
     function monthLabel(key) { const [y, m] = key.split("-"); return new Date(y, m - 1, 1).toLocaleDateString("en-US", { month: "short", year: "numeric" }); }
 
-    /* money calculations */
-    function totalIncome() { 
-      const realIncomes = state.incomes.filter(i => !i.source.startsWith("Transfer")).reduce((a, b) => a + Number(b.amount), 0);
-      const transfersSent = state.expenses.filter(e => e.category === "Transfer").reduce((a, b) => a + Number(b.amount), 0);
-      return realIncomes - transfersSent; 
-    }
-    function totalExpense() { 
-      return state.expenses.filter(e => e.category !== "Transfer").reduce((a, b) => a + Number(b.amount), 0); 
-    }
+    /* money calculations (transfers live in their own table, so income/expense
+       sums are clean and a transfer never changes the household total) */
+    function totalIncome() { return state.incomes.reduce((a, b) => a + Number(b.amount), 0); }
+    function totalExpense() { return state.expenses.reduce((a, b) => a + Number(b.amount), 0); }
     function balance() { return totalIncome() - totalExpense(); }
+    function transfersIn(u) { return state.transfers.filter(t => t.to_label === u).reduce((a, b) => a + Number(b.amount), 0); }
+    function transfersOut(u) { return state.transfers.filter(t => t.from_label === u).reduce((a, b) => a + Number(b.amount), 0); }
+    function userIncome(u) { return state.incomes.filter(i => i.user === u).reduce((a, b) => a + Number(b.amount), 0); }
+    function userExpense(u, key) { return state.expenses.filter(e => e.user === u && (!key || monthKey(e.date) === key)).reduce((a, b) => a + Number(b.amount), 0); }
+    /* each person's available money: their income + money received - money sent - their spending */
+    function personalBalance(u) { return userIncome(u) + transfersIn(u) - transfersOut(u) - userExpense(u); }
     function overspendMap() {
       const tx = [];
-      state.incomes.filter(i => !i.source.startsWith("Transfer")).forEach(i => tx.push({ t: "in", date: i.date, amt: Number(i.amount) }));
-      state.expenses.forEach(e => {
-        if (e.category === "Transfer") tx.push({ t: "deduct", date: e.date, amt: Number(e.amount) });
-        else tx.push({ t: "ex", date: e.date, amt: Number(e.amount), id: e.id });
-      });
+      state.incomes.forEach(i => tx.push({ t: "in", date: i.date, amt: Number(i.amount) }));
+      state.expenses.forEach(e => tx.push({ t: "ex", date: e.date, amt: Number(e.amount), id: e.id }));
       tx.sort((a, b) => a.date === b.date ? 0 : (a.date < b.date ? -1 : 1));
       let run = 0; const map = {};
-      for (const x of tx) { 
-        if (x.t === "in") run += x.amt; 
-        else if (x.t === "deduct") run -= x.amt;
-        else { run -= x.amt; map[x.id] = run < 0; } 
-      }
+      for (const x of tx) { if (x.t === "in") run += x.amt; else { run -= x.amt; map[x.id] = run < 0; } }
       return map;
     }
     function monthStats(key) {
-      const realInc = state.incomes.filter(i => monthKey(i.date) === key && !i.source.startsWith("Transfer")).reduce((a, b) => a + Number(b.amount), 0);
-      const transfersSent = state.expenses.filter(e => monthKey(e.date) === key && e.category === "Transfer").reduce((a, b) => a + Number(b.amount), 0);
-      const exp = state.expenses.filter(e => monthKey(e.date) === key && e.category !== "Transfer").reduce((a, b) => a + Number(b.amount), 0);
-      const inc = realInc - transfersSent;
+      const inc = state.incomes.filter(i => monthKey(i.date) === key).reduce((a, b) => a + Number(b.amount), 0);
+      const exp = state.expenses.filter(e => monthKey(e.date) === key).reduce((a, b) => a + Number(b.amount), 0);
       return { inc, exp, net: inc - exp };
     }
-    function userExpense(u, key) { 
-      return state.expenses.filter(e => e.user === u && e.category !== "Transfer" && (!key || monthKey(e.date) === key)).reduce((a, b) => a + Number(b.amount), 0); 
-    }
-    function userIncome(u) { 
-      const realInc = state.incomes.filter(i => i.user === u && !i.source.startsWith("Transfer")).reduce((a, b) => a + Number(b.amount), 0); 
-      const transferInc = state.incomes.filter(i => i.user === u && i.source.startsWith("Transfer")).reduce((a, b) => a + Number(b.amount), 0);
-      const transfersSent = state.expenses.filter(e => e.user === u && e.category === "Transfer").reduce((a, b) => a + Number(b.amount), 0);
-      return realInc + transferInc - transfersSent;
-    }
-    function categorySpend(key) { const m = {}; state.expenses.filter(e => monthKey(e.date) === key && e.category !== "Transfer").forEach(e => { m[e.category] = (m[e.category] || 0) + Number(e.amount); }); return m; }
+    function categorySpend(key) { const m = {}; state.expenses.filter(e => monthKey(e.date) === key).forEach(e => { m[e.category] = (m[e.category] || 0) + Number(e.amount); }); return m; }
 
     /* ---------------------------------------------------------------------------
        SUPABASE LOAD
        --------------------------------------------------------------------------- */
     async function loadAll() {
       const hid = state.household.id;
-      const [inc, exp, cats, buds] = await Promise.all([
+      const [inc, exp, tr, cats, buds] = await Promise.all([
         sb.from("incomes").select("*").eq("household_id", hid).order("date", { ascending: false }),
         sb.from("expenses").select("*").eq("household_id", hid).order("date", { ascending: false }),
+        sb.from("transfers").select("*").eq("household_id", hid).order("date", { ascending: false }),
         sb.from("categories").select("*").eq("household_id", hid).order("name"),
         sb.from("budgets").select("*").eq("household_id", hid)
       ]);
-      state.incomes = (inc.data || []).map(r => ({ ...r, user: r.payer }));
-      state.expenses = (exp.data || []).map(r => ({ ...r, user: r.payer }));
+      // .filter(...) ignores any leftover rows from the old transfer method, just in case
+      state.incomes = (inc.data || []).map(r => ({ ...r, user: r.payer })).filter(i => !(i.source || "").startsWith("Transfer from "));
+      state.expenses = (exp.data || []).map(r => ({ ...r, user: r.payer })).filter(e => e.category !== "Transfer" && e.category !== "Transfer Expense");
+      state.transfers = tr.data || [];
       state.categories = {}; (cats.data || []).forEach(c => state.categories[c.name] = c.subcategories || []);
       state.budgets = {}; (buds.data || []).forEach(b => state.budgets[b.category] = Number(b.monthly_limit));
     }
@@ -896,8 +265,7 @@
        --------------------------------------------------------------------------- */
     function applyTheme() { document.documentElement.setAttribute("data-theme", state.settings.theme); const b = $("#themeBtn"); if (b) b.textContent = state.settings.theme === "dark" ? "☀️" : "🌙"; }
     function toggleTheme() { state.settings.theme = state.settings.theme === "dark" ? "light" : "dark"; try { localStorage.setItem("hf_theme", state.settings.theme); } catch (e) { } applyTheme(); renderCurrent(); }
-    function setUser(u) { state.settings.currentUser = u; renderUserSeg(); renderCurrent(); }
-    function renderUserSeg() { document.querySelectorAll("#userSeg button").forEach(b => b.classList.toggle("active", b.dataset.u === state.settings.currentUser)); }
+    function renderIdentity() { const p = $("#idPill"); if (!p) return; p.textContent = state.me; p.className = "pill " + cls(state.me); }
 
     let currentView = "dashboard";
     function switchView(v) { currentView = v; document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("active", b.dataset.v === v)); renderCurrent(); }
@@ -919,22 +287,24 @@
        VIEWS
        =========================================================================== */
     function renderDashboard() {
-      const bal = balance(), m = curMonth(), st = monthStats(m), tInc = totalIncome();
+      const comb = balance(), m = curMonth(), st = monthStats(m), tInc = totalIncome();
+      const hBal = personalBalance("Husband"), wBal = personalBalance("Wife"), myBal = personalBalance(state.me);
       const hShare = tInc ? userIncome("Husband") / tInc * 100 : 50, wShare = 100 - hShare;
       const spend = categorySpend(m);
       const overBudget = Object.keys(state.budgets).filter(c => state.budgets[c] > 0 && (spend[c] || 0) > state.budgets[c]);
       let banner = "";
-      if (bal < 0) banner += `<div class="banner">⚠️ Combined balance is negative. You've overspent by ${fmt(Math.abs(bal))}. Add income or reduce spending.</div>`;
+      if (comb < 0) banner += `<div class="banner">⚠️ Combined household balance is negative — overspent by ${fmt(Math.abs(comb))}. Add income to clear it.</div>`;
+      if (myBal < 0) banner += `<div class="banner">⚠️ Your balance (${state.me}) is negative (${fmt(myBal)}). Add income or receive a transfer.</div>`;
       if (overBudget.length) banner += `<div class="banner" style="border-color:var(--warn);color:var(--warn)">📊 Over budget this month: ${overBudget.join(", ")}.</div>`;
       $("#view").innerHTML = `${banner}
     <div class="card hero" style="margin-bottom:16px">
       <div>
         <div class="label">Combined available balance</div>
-        <div class="balance num ${bal < 0 ? 'neg' : 'pos'}">${fmt(bal)}</div>
-        <div style="color:var(--muted);margin-top:6px">${bal < 0 ? "In overspending (debt) — new income clears this automatically" : "Across both incomes, after all expenses"}</div>
+        <div class="balance num ${comb < 0 ? 'neg' : 'pos'}">${fmt(comb)}</div>
+        <div style="color:var(--muted);margin-top:6px">${comb < 0 ? "Household is overspending — new income clears this automatically" : "Total across both of you, after all spending"}</div>
         <div class="mini">
-          <div class="box"><div class="label">This month income</div><div class="v num" style="color:var(--primary)">${fmt(st.inc)}</div></div>
-          <div class="box"><div class="label">This month expenses</div><div class="v num">${fmt(st.exp)}</div></div>
+          <div class="box"><div class="label"><span class="pill h">Husband</span> available</div><div class="v num" style="color:${hBal < 0 ? 'var(--danger)' : 'inherit'}">${fmt(hBal)}</div></div>
+          <div class="box"><div class="label"><span class="pill w">Wife</span> available</div><div class="v num" style="color:${wBal < 0 ? 'var(--danger)' : 'inherit'}">${fmt(wBal)}</div></div>
           <div class="box"><div class="label">This month net</div><div class="v num" style="color:${st.net < 0 ? 'var(--danger)' : 'var(--primary)'}">${fmt(st.net)}</div></div>
         </div>
       </div>
@@ -946,9 +316,9 @@
           <span>${fmt(userIncome("Wife"))} <span class="pill w">Wife</span></span>
         </div>
         <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
-          <button class="btn primary" style="flex:1;min-width:110px" onclick="expenseModal()">+ Expense</button>
-          <button class="btn" style="flex:1;min-width:110px" onclick="incomeModal()">+ Income</button>
-          <button class="btn" style="flex:1;min-width:110px;border-color:var(--primary);color:var(--primary)" onclick="transferModal()">+ Transfer</button>
+          <button class="btn primary" style="flex:1;min-width:108px" onclick="expenseModal()">+ Expense</button>
+          <button class="btn" style="flex:1;min-width:108px" onclick="incomeModal()">+ Income</button>
+          <button class="btn" style="flex:1;min-width:108px;border-color:var(--primary);color:var(--primary)" onclick="transferModal()">⇄ Transfer</button>
         </div>
       </div>
     </div>
@@ -978,10 +348,7 @@
       charts.trend = new Chart($("#c_trend"), {
         type: "line", data: {
           labels: months.map(monthLabel), datasets: [
-            {
-              label: "Net", data: months.map(k => monthStats(k).net), borderColor: c.primary, tension: .3,
-              pointBackgroundColor: months.map(k => monthStats(k).net < 0 ? c.danger : c.primary), pointRadius: 4, fill: false
-            }]
+            { label: "Net", data: months.map(k => monthStats(k).net), borderColor: c.primary, tension: .3, pointBackgroundColor: months.map(k => monthStats(k).net < 0 ? c.danger : c.primary), pointRadius: 4, fill: false }]
         },
         options: { ...opts, scales: { x: { grid: { display: false } }, y: { grid: { color: c.line } } } }
       });
@@ -1002,7 +369,7 @@
       let list = [...state.expenses];
       if (exFilter.month) list = list.filter(e => monthKey(e.date) === exFilter.month);
       if (exFilter.user !== "all") list = list.filter(e => e.user === exFilter.user);
-      if (exFilter.text) { const q = exFilter.text.toLowerCase(); list = list.filter(e => (e.category + e.subcategory + (e.notes || "") + (e.store || "")).toLowerCase().includes(q)); }
+      if (exFilter.text) { const q = exFilter.text.toLowerCase(); list = list.filter(e => (e.category + (e.subcategory || "") + (e.notes || "") + (e.store || "")).toLowerCase().includes(q)); }
       $("#view").innerHTML = `
     <div class="head-row"><h2>Expenses</h2><button class="btn primary" onclick="expenseModal()">+ Add expense</button></div>
     <div class="card">
@@ -1017,7 +384,7 @@
         <td>${e.category} ${e.bill_id ? `<span class="pill">🧾 ${e.store || "bill"}</span>` : ''} ${om[e.id] ? '<span class="pill danger">overspent</span>' : ''}</td>
         <td>${e.subcategory || "—"}${e.notes ? `<div style="color:var(--muted);font-size:12px">${e.notes}</div>` : ''}</td>
         <td class="num">${e.quantity ? e.quantity + " " + (e.unit || "") : "—"}</td>
-        <td><span class="pill ${e.user === 'Husband' ? 'h' : 'w'}">${e.user}</span></td>
+        <td><span class="pill ${cls(e.user)}">${e.user}</span></td>
         <td class="num" style="text-align:right;font-weight:700">${fmt(e.amount)}</td>
         <td><div class="row-act"><button class="link" onclick="expenseModal('${e.id}')">Edit</button><button class="link del" onclick="delTx('expenses','${e.id}')">Delete</button></div></td>
       </tr>`).join("") : `<tr><td colspan="7"><div class="empty">No expenses found. Add your first one above.</div></td></tr>`}
@@ -1025,21 +392,41 @@
     </div>`;
     }
 
-    /* ---------- Income ---------- */
+    /* ---------- Income (+ Transfers) ---------- */
     function renderIncome() {
-      let list = [...state.incomes];
+      const list = [...state.incomes], tr = [...state.transfers];
       $("#view").innerHTML = `
-    <div class="head-row"><h2>Income</h2><button class="btn primary" onclick="incomeModal()">+ Add income</button></div>
-    <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Source</th><th>By</th><th>Notes</th><th>Repeat</th><th style="text-align:right">Amount</th><th></th></tr></thead><tbody>
-    ${list.length ? list.map(i => `<tr>
-      <td class="num">${i.date}</td><td>${i.source}</td>
-      <td><span class="pill ${i.user === 'Husband' ? 'h' : 'w'}">${i.user}</span></td>
-      <td style="color:var(--muted)">${i.notes || "—"}</td>
-      <td>${i.recurring ? '<span class="pill">monthly</span>' : "—"}</td>
-      <td class="num" style="text-align:right;font-weight:700;color:var(--primary)">${fmt(i.amount)}</td>
-      <td><div class="row-act"><button class="link" onclick="incomeModal('${i.id}')">Edit</button><button class="link del" onclick="delTx('incomes','${i.id}')">Delete</button></div></td>
-    </tr>`).join("") : `<tr><td colspan="7"><div class="empty">No income yet. Add a salary or other source above.</div></td></tr>`}
-    </tbody></table></div></div>`;
+    <div class="head-row"><h2>Income</h2>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="transferModal()">⇄ Transfer</button>
+        <button class="btn primary" onclick="incomeModal()">+ Add income</button>
+      </div></div>
+    <div class="card" style="margin-bottom:16px">
+      <h3 style="margin-bottom:12px">Income</h3>
+      <div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Source</th><th>By</th><th>Notes</th><th>Repeat</th><th style="text-align:right">Amount</th><th></th></tr></thead><tbody>
+      ${list.length ? list.map(i => `<tr>
+        <td class="num">${i.date}</td><td>${i.source}</td>
+        <td><span class="pill ${cls(i.user)}">${i.user}</span></td>
+        <td style="color:var(--muted)">${i.notes || "—"}</td>
+        <td>${i.recurring ? '<span class="pill">monthly</span>' : "—"}</td>
+        <td class="num" style="text-align:right;font-weight:700;color:var(--primary)">${fmt(i.amount)}</td>
+        <td><div class="row-act"><button class="link" onclick="incomeModal('${i.id}')">Edit</button><button class="link del" onclick="delTx('incomes','${i.id}')">Delete</button></div></td>
+      </tr>`).join("") : `<tr><td colspan="7"><div class="empty">No income yet. Add a salary or other source above.</div></td></tr>`}
+      </tbody></table></div>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:6px">Transfers between you two</h3>
+      <p style="color:var(--muted);margin-top:0">Money moved from one of you to the other. It adds to the receiver's balance and subtracts from the sender's — your combined total stays the same.</p>
+      <div class="tbl-wrap"><table><thead><tr><th>Date</th><th>From → To</th><th>Notes</th><th style="text-align:right">Amount</th><th></th></tr></thead><tbody>
+      ${tr.length ? tr.map(t => `<tr>
+        <td class="num">${t.date}</td>
+        <td><span class="pill ${cls(t.from_label)}">${t.from_label}</span> → <span class="pill ${cls(t.to_label)}">${t.to_label}</span></td>
+        <td style="color:var(--muted)">${t.notes || "—"}</td>
+        <td class="num" style="text-align:right;font-weight:700">${fmt(t.amount)}</td>
+        <td><button class="link del" onclick="delTransfer('${t.id}')">Delete</button></td>
+      </tr>`).join("") : `<tr><td colspan="5"><div class="empty">No transfers yet. Use the “⇄ Transfer” button.</div></td></tr>`}
+      </tbody></table></div>
+    </div>`;
     }
 
     /* ---------- Calendar ---------- */
@@ -1072,8 +459,8 @@
       const ex = state.expenses.filter(e => e.date === iso), inc = state.incomes.filter(i => i.date === iso);
       const total = ex.reduce((a, b) => a + Number(b.amount), 0);
       const body = `<p class="label">Total spent: <span class="num" style="color:var(--danger);font-size:16px">${fmt(total)}</span></p>
-    ${inc.length ? `<h3 style="font-size:15px;margin:12px 0 6px">Income</h3>` + inc.map(i => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${i.source} <span class="pill ${i.user === 'Husband' ? 'h' : 'w'}">${i.user}</span></span><span class="num" style="color:var(--primary)">${fmt(i.amount)}</span></div>`).join("") : ""}
-    ${ex.length ? `<h3 style="font-size:15px;margin:12px 0 6px">Expenses</h3>` + ex.map(e => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${e.category} › ${e.subcategory || "—"} <span class="pill ${e.user === 'Husband' ? 'h' : 'w'}">${e.user}</span></span><span class="num">${fmt(e.amount)}</span></div>`).join("") : `<div class="empty">No expenses on this day.</div>`}`;
+    ${inc.length ? `<h3 style="font-size:15px;margin:12px 0 6px">Income</h3>` + inc.map(i => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${i.source} <span class="pill ${cls(i.user)}">${i.user}</span></span><span class="num" style="color:var(--primary)">${fmt(i.amount)}</span></div>`).join("") : ""}
+    ${ex.length ? `<h3 style="font-size:15px;margin:12px 0 6px">Expenses</h3>` + ex.map(e => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${e.category} › ${e.subcategory || "—"} <span class="pill ${cls(e.user)}">${e.user}</span></span><span class="num">${fmt(e.amount)}</span></div>`).join("") : `<div class="empty">No expenses on this day.</div>`}`;
       openModal(new Date(iso).toDateString(), body, `<button class="btn" onclick="closeModal()">Close</button>`);
     }
 
@@ -1170,20 +557,15 @@
     <div class="head-row"><h2>Settings</h2></div>
     <div class="grid g2">
       <div class="card">
-        <h3>Your household</h3>
-        <p style="color:var(--muted)">Share this code with your spouse so they can join and see the same data.</p>
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <div class="label">Household code</div>
-          <strong style="font-size:20px;letter-spacing:.15em" class="num">${state.household.code}</strong>
-          <button class="btn sm" onclick="navigator.clipboard&&navigator.clipboard.writeText('${state.household.code}');toast('Code copied')">Copy</button>
-        </div>
-        <p style="margin-bottom:0">You are signed in as <span class="pill ${state.household.label === 'Husband' ? 'h' : 'w'}">${state.household.label}</span></p>
+        <h3>Your account</h3>
+        <p style="margin:8px 0 0">You're logged in as <span class="pill ${cls(state.me)}">${state.me}</span>. Two 4-digit PINs (one each) protect this app.</p>
+        <button class="btn" style="margin-top:14px" onclick="logout()">Log out / switch user</button>
       </div>
       <div class="card">
         <h3>Recurring items</h3>
         <p style="color:var(--muted)">Items marked “repeat monthly”. Post them into the current month in one click.</p>
         ${(recEx.length || recIn.length) ? `
-          ${recIn.map(i => `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--line)"><span>＋ ${i.source} <span class="pill ${i.user === 'Husband' ? 'h' : 'w'}">${i.user}</span></span><span class="num" style="color:var(--primary)">${fmt(i.amount)}</span></div>`).join("")}
+          ${recIn.map(i => `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--line)"><span>＋ ${i.source} <span class="pill ${cls(i.user)}">${i.user}</span></span><span class="num" style="color:var(--primary)">${fmt(i.amount)}</span></div>`).join("")}
           ${recEx.map(e => `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--line)"><span>－ ${e.category} › ${e.subcategory || "—"}</span><span class="num">${fmt(e.amount)}</span></div>`).join("")}
           <button class="btn primary sm" style="margin-top:12px" onclick="postRecurring()">Post all to ${monthLabel(curMonth())}</button>
         `: '<div class="empty">No recurring items yet. Tick “repeat monthly” when adding income/expense.</div>'}
@@ -1195,14 +577,14 @@
       </div>
       <div class="card">
         <h3>Danger zone</h3>
-        <p style="color:var(--muted)">Delete every income, expense and budget in this household. Categories are kept. Cannot be undone.</p>
+        <p style="color:var(--muted)">Delete every income, expense, transfer and budget in this household. Categories are kept. Cannot be undone.</p>
         <button class="btn" style="border-color:var(--danger);color:var(--danger)" onclick="resetAll()">Erase all entries</button>
       </div>
     </div>`;
     }
-    function backup() { download(`household-finance-backup-${todayISO()}.json`, new Blob([JSON.stringify({ household: state.household, incomes: state.incomes, expenses: state.expenses, categories: state.categories, budgets: state.budgets }, null, 2)], { type: "application/json" })); }
-    function resetAll() { openModal("Erase all entries?", "<p>All income, expenses and budgets in this household will be permanently removed.</p>", `<button class="btn" onclick="closeModal()">Cancel</button><button class="btn" style="border-color:var(--danger);color:var(--danger)" onclick="confirmReset()">Erase</button>`); }
-    async function confirmReset() { const hid = state.household.id; await Promise.all([sb.from("incomes").delete().eq("household_id", hid), sb.from("expenses").delete().eq("household_id", hid), sb.from("budgets").delete().eq("household_id", hid)]); await loadAll(); closeModal(); switchView("dashboard"); toast("All entries erased"); }
+    function backup() { download(`household-finance-backup-${todayISO()}.json`, new Blob([JSON.stringify({ household: state.household, incomes: state.incomes, expenses: state.expenses, transfers: state.transfers, categories: state.categories, budgets: state.budgets }, null, 2)], { type: "application/json" })); }
+    function resetAll() { openModal("Erase all entries?", "<p>All income, expenses, transfers and budgets in this household will be permanently removed.</p>", `<button class="btn" onclick="closeModal()">Cancel</button><button class="btn" style="border-color:var(--danger);color:var(--danger)" onclick="confirmReset()">Erase</button>`); }
+    async function confirmReset() { const hid = state.household.id; await Promise.all([sb.from("incomes").delete().eq("household_id", hid), sb.from("expenses").delete().eq("household_id", hid), sb.from("transfers").delete().eq("household_id", hid), sb.from("budgets").delete().eq("household_id", hid)]); await loadAll(); closeModal(); switchView("dashboard"); toast("All entries erased"); }
     async function postRecurring() {
       const m = curMonth(), hid = state.household.id, stamp = todayISO(); const ins = [];
       state.incomes.filter(i => i.recurring).forEach(i => { const ex = state.incomes.some(x => monthKey(x.date) === m && x.source === i.source && x.user === i.user && Number(x.amount) === Number(i.amount) && x.id !== i.id); if (!ex) ins.push({ type: "incomes", row: { household_id: hid, payer: i.user, amount: Number(i.amount), date: stamp, source: i.source, notes: i.notes, recurring: false } }); });
@@ -1217,7 +599,7 @@
        ADD / EDIT MODALS
        =========================================================================== */
     function incomeModal(id) {
-      const it = id ? state.incomes.find(i => i.id === id) : { amount: "", date: todayISO(), source: "", notes: "", user: state.settings.currentUser, recurring: false };
+      const it = id ? state.incomes.find(i => i.id === id) : { amount: "", date: todayISO(), source: "", notes: "", user: state.me, recurring: false };
       openModal(id ? "Edit income" : "Add income", `
     <div class="row"><div class="field"><label>Amount (₹)</label><input id="iAmt" type="number" min="0" step="0.01" value="${it.amount}"></div>
       <div class="field"><label>Date</label><input id="iDate" type="date" value="${it.date}"></div></div>
@@ -1239,54 +621,31 @@
 
     /* ---------- Transfer ---------- */
     function transferModal() {
-      const u = state.settings.currentUser;
-      const other = u === "Husband" ? "Wife" : "Husband";
-      openModal("Transfer Money", `
-    <p style="color:var(--muted);margin-top:0">Send money to your spouse.</p>
+      const pr = partner();
+      openModal("Transfer money", `
+    <p style="color:var(--muted);margin-top:0">This moves money from your balance to ${pr}'s — like handing over spending money. It counts as earning for ${pr} and reduces your balance, but your combined household total stays the same.</p>
+    <div class="transfer-dir">From <span class="pill ${cls(state.me)}">${state.me} (you)</span> <span style="font-size:18px">→</span> To <span class="pill ${cls(pr)}">${pr}</span></div>
     <div class="row"><div class="field"><label>Amount (₹)</label><input id="tAmt" type="number" min="0" step="0.01"></div>
       <div class="field"><label>Date</label><input id="tDate" type="date" value="${todayISO()}"></div></div>
-    <div class="row">
-      <div class="field"><label>From</label><select id="tFrom" onchange="document.getElementById('tTo').value = this.value === 'Husband' ? 'Wife' : 'Husband'"><option ${u === 'Husband' ? 'selected' : ''}>Husband</option><option ${u === 'Wife' ? 'selected' : ''}>Wife</option></select></div>
-      <div class="field"><label>To</label><select id="tTo" disabled><option ${other === 'Husband' ? 'selected' : ''}>Husband</option><option ${other === 'Wife' ? 'selected' : ''}>Wife</option></select></div>
-    </div>
-    <div class="field"><label class="check"><input id="tDeductIncome" type="checkbox" checked> Deduct from sender's income (keeps total household income unchanged)</label></div>
-    <div class="field"><label>Notes (optional)</label><textarea id="tNotes" rows="2" placeholder="e.g. For groceries"></textarea></div>`,
+    <div class="field"><label>Notes (optional)</label><textarea id="tNotes" rows="2" placeholder="e.g. monthly allowance"></textarea></div>`,
         `<button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveTransfer()">Send transfer</button>`);
     }
-
     async function saveTransfer() {
       const amt = Number($("#tAmt").value);
       if (!amt || amt <= 0) return toast("Enter a valid amount.", "warn");
-      const from = $("#tFrom").value;
-      const to = $("#tTo").value;
-      const date = $("#tDate").value;
-      const notes = $("#tNotes").value.trim();
-      const deductIncome = $("#tDeductIncome").checked;
-      const hid = state.household.id;
-
-      // To avoid database check constraints on negative income amounts,
-      // we insert a positive Expense row for the sender. If "deductIncome" is true,
-      // we use category "Transfer", which the UI calculates as a deduction from Income
-      // rather than counting it as a Household Expense.
-      const expCategory = deductIncome ? "Transfer" : "Transfer Expense";
-
-      const expPayload = { household_id: hid, payer: from, amount: amt, date, category: expCategory, subcategory: "Sent to " + to, notes, recurring: false };
-      const incPayload = { household_id: hid, payer: to, amount: amt, date, source: `Transfer from ${from}`, notes, recurring: false };
-
-      const { error: e1 } = await sb.from("expenses").insert(expPayload);
-      if (e1) return toast(e1.message, "danger");
-      
-      const { error: e2 } = await sb.from("incomes").insert(incPayload);
-      if (e2) return toast(e2.message, "danger");
-
+      const { error } = await sb.rpc("make_transfer", { p_amount: amt, p_date: $("#tDate").value, p_notes: $("#tNotes").value });
+      if (error) return toast(error.message, "danger");
       await loadAll(); closeModal(); renderCurrent();
-      toast("Transfer completed successfully");
+      toast(`Sent ${fmt(amt)} to ${partner()}`);
+      if (personalBalance(state.me) < 0) toast(`Your balance is now negative (${fmt(personalBalance(state.me))}).`, "warn");
     }
+    async function delTransfer(id) { const { error } = await sb.from("transfers").delete().eq("id", id); if (error) return toast(error.message, "danger"); await loadAll(); renderCurrent(); toast("Transfer deleted"); }
 
+    /* ---------- Expense (single or multi-item bill) ---------- */
     let billItems = [];
     function expenseModal(id) {
       billItems = [];
-      const it = id ? state.expenses.find(e => e.id === id) : { amount: "", date: todayISO(), category: Object.keys(state.categories)[0] || "", subcategory: "", quantity: "", unit: "Units", notes: "", user: state.settings.currentUser, recurring: false };
+      const it = id ? state.expenses.find(e => e.id === id) : { amount: "", date: todayISO(), category: Object.keys(state.categories)[0] || "", subcategory: "", quantity: "", unit: "Units", notes: "", user: state.me, recurring: false };
       openModal(id ? "Edit expense" : "Add expense", `
     ${id ? '' : `<label class="check" style="margin-bottom:12px"><input id="eBill" type="checkbox" onchange="toggleBill()"> 🧾 Multiple items (one bill, e.g. supermarket)</label>`}
     <div id="singleBox">
@@ -1300,10 +659,10 @@
     <div id="billBox" style="display:none">
       <div class="row"><div class="field"><label>Store / shop name</label><input id="eStore" placeholder="e.g. DMart"></div>
         <div class="field"><label>Date</label><input id="eDateB" type="date" value="${it.date}"></div></div>
-      <div class="label" style="margin-bottom:6px">Items in this bill</div>
-      <div class="tbl-wrap"><div id="billItems"></div></div>
+      <div class="label" style="margin-bottom:8px">Items in this bill</div>
+      <div id="billItems"></div>
       <button class="btn sm" type="button" onclick="addBillItem()">+ Add item</button>
-      <div style="text-align:right;margin-top:10px;font-weight:700">Bill total: <span id="billTotal" class="num">${fmt(0)}</span></div>
+      <div style="text-align:right;margin-top:12px;font-weight:700;font-size:15px">Bill total: <span id="billTotal" class="num">${fmt(0)}</span></div>
     </div>
     <div class="row"><div class="field"><label>Spent by</label><select id="eUser">${["Husband", "Wife"].map(u => `<option ${it.user === u ? 'selected' : ''}>${u}</option>`).join("")}</select></div>
       <div class="field" style="justify-content:flex-end" id="recWrap"><label class="check"><input id="eRec" type="checkbox" ${it.recurring ? 'checked' : ''}> Repeat monthly</label></div></div>
@@ -1326,16 +685,16 @@
       const c = $("#billItems"); if (!c) return;
       c.innerHTML = billItems.map((it, i) => `<div class="bill-item-card">
     <button class="icon-btn remove-btn" type="button" onclick="removeBillItem(${i})">✕</button>
-    <div class="grid g2" style="margin-bottom:8px;gap:8px">
-      <div class="field" style="margin:0"><label>Item Name</label><input placeholder="e.g. Milk" value="${it.name}" oninput="billItems[${i}].name=this.value"></div>
+    <div class="field" style="margin-bottom:10px"><label>Item name</label><input placeholder="e.g. Milk" value="${it.name}" oninput="billItems[${i}].name=this.value"></div>
+    <div class="row" style="margin-bottom:10px">
       <div class="field" style="margin:0"><label>Category</label><select onchange="billItems[${i}].category=this.value">${Object.keys(state.categories).map(cat => `<option ${it.category === cat ? 'selected' : ''}>${cat}</option>`).join("")}</select></div>
+      <div class="field" style="margin:0"><label>Amount (₹)</label><input type="number" min="0" step="0.01" placeholder="0" value="${it.amount}" oninput="billItems[${i}].amount=this.value;updateBillTotal()"></div>
     </div>
-    <div class="grid" style="grid-template-columns:1fr 1fr 1.5fr;gap:8px">
-      <div class="field" style="margin:0"><label>Qty</label><input type="number" placeholder="e.g. 1" value="${it.qty}" oninput="billItems[${i}].qty=this.value"></div>
+    <div class="row" style="margin:0">
+      <div class="field" style="margin:0"><label>Quantity</label><input type="number" min="0" step="0.01" placeholder="e.g. 2" value="${it.qty}" oninput="billItems[${i}].qty=this.value"></div>
       <div class="field" style="margin:0"><label>Unit</label><select onchange="billItems[${i}].unit=this.value">${UNITS.map(u => `<option ${it.unit === u ? 'selected' : ''}>${u}</option>`).join("")}</select></div>
-      <div class="field" style="margin:0"><label>Amount (₹)</label><input type="number" placeholder="₹" value="${it.amount}" oninput="billItems[${i}].amount=this.value;updateBillTotal()"></div>
     </div>
-    </div>`).join("") || '<div style="color:var(--muted);padding:10px 0">No items yet — add one below.</div>';
+    </div>`).join("") || '<div class="empty" style="padding:14px 0">No items yet — tap “+ Add item”.</div>';
       updateBillTotal();
     }
     function updateBillTotal() { const el = $("#billTotal"); if (el) el.textContent = fmt(billTotal()); }
@@ -1355,7 +714,7 @@
         if (error) return toast(error.message, "danger");
       }
       await loadAll(); closeModal(); renderCurrent();
-      if (balance() < 0) toast(`Heads up: balance is now negative (${fmt(balance())}).`, "danger");
+      if (balance() < 0) toast(`Heads up: combined balance is now negative (${fmt(balance())}).`, "danger");
       else toast("Expense saved");
       const sp = categorySpend(curMonth());
       const over = Object.keys(state.budgets).filter(c => state.budgets[c] > 0 && (sp[c] || 0) > state.budgets[c]);
@@ -1396,105 +755,108 @@
     async function delTx(kind, id) { const { error } = await sb.from(kind).delete().eq("id", id); if (error) return toast(error.message, "danger"); await loadAll(); renderCurrent(); toast("Deleted"); }
 
     /* ===========================================================================
-       AUTH + GATE
+       AUTH (anonymous session + 4-digit PIN) + GATE
        =========================================================================== */
-    let authMode = "signin", setupMode = "create";
+    let loginLabel = null;
     function showApp() { $("#gate").style.display = "none"; $("#app").style.display = "block"; }
-    function showGate(mode) {
-      $("#app").style.display = "none"; $("#gate").style.display = "flex";
+
+    function showGate(mode, msg) {
+      $("#app").style.display = "none";
+      const g = $("#gate"); g.style.display = "flex";
       if (mode === "config") {
-        $("#gate").innerHTML = `<div class="card"><div class="brand" style="margin-bottom:12px"><span class="dot">₹</span> Household Finance</div>
-      <h3>Almost there</h3>
-      <p style="color:var(--muted)">Open <strong>index.html</strong> and paste your Supabase <em>Project URL</em> and <em>anon public key</em> into the two lines near the top (Step 1), then redeploy.</p></div>`;
+        g.innerHTML = `<div class="card"><div class="brand" style="margin-bottom:12px"><span class="dot">₹</span> Household Finance</div>
+          <h3>Almost there</h3>
+          <p style="color:var(--muted)">Open <strong>index.html</strong> and paste your Supabase <em>Project URL</em> and <em>anon public key</em> near the top, then redeploy.</p></div>`;
         return;
       }
-      if (mode === "auth") {
-        $("#gate").innerHTML = `<div class="card">
-      <div class="brand" style="margin-bottom:16px"><span class="dot">₹</span> Household Finance</div>
-      <div class="tab2"><button class="${authMode === 'signin' ? 'active' : ''}" onclick="authMode='signin';showGate('auth')">Sign in</button><button class="${authMode === 'signup' ? 'active' : ''}" onclick="authMode='signup';showGate('auth')">Create PIN</button></div>
-      <div style="text-align:center;margin-bottom:16px;color:var(--muted)">${authMode === 'signin' ? 'Select your identity and enter your 4-digit PIN' : 'Create a 4-digit PIN for your account'}</div>
-      <div class="field"><label>Identity</label><select id="aId"><option>Husband</option><option>Wife</option></select></div>
-      <div class="field"><label>4-Digit PIN</label><input id="aPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="••••" style="font-size:32px;letter-spacing:16px;text-align:center;padding:12px"></div>
-      <button class="btn primary" style="width:100%" onclick="doAuth()">${authMode === 'signin' ? 'Sign in' : 'Create PIN'}</button>
-      <div class="err" id="aErr"></div></div>`;
-        $("#aPin").addEventListener("keydown", e => { if (e.key === "Enter") doAuth(); });
+      if (mode === "authfail") {
+        g.innerHTML = `<div class="card"><div class="brand" style="margin-bottom:12px"><span class="dot">₹</span> Household Finance</div>
+          <h3>One setting to switch on</h3>
+          <p style="color:var(--muted)">In Supabase, open <strong>Authentication → Sign In / Providers</strong> and turn on <strong>Anonymous sign-ins</strong>, then reload this page.</p>
+          ${msg ? `<p class="err">${msg}</p>` : ""}
+          <button class="btn primary" style="width:100%" onclick="location.reload()">Reload</button></div>`;
         return;
       }
       if (mode === "setup") {
-        $("#gate").innerHTML = `<div class="card">
-      <div class="brand" style="margin-bottom:16px"><span class="dot">₹</span> Set up your household</div>
-      <div class="tab2"><button class="${setupMode === 'create' ? 'active' : ''}" onclick="setupMode='create';showGate('setup')">Create new</button><button class="${setupMode === 'join' ? 'active' : ''}" onclick="setupMode='join';showGate('setup')">Join with code</button></div>
-      ${setupMode === 'create' ? `
-        <p style="color:var(--muted);margin-top:0">Start a household. You'll get a code to share with your spouse.</p>
-        <div class="field"><label>Household name</label><input id="sName" placeholder="Our Household" value="Our Household"></div>
-        <div class="field"><label>You are</label><select id="sLabel"><option>Husband</option><option>Wife</option></select></div>
-        <button class="btn primary" style="width:100%" onclick="doCreate()">Create household</button>`
-            : `
-        <p style="color:var(--muted);margin-top:0">Enter the code your spouse shared with you.</p>
-        <div class="field"><label>Household code</label><input id="jCode" placeholder="e.g. 4F9A2B" style="text-transform:uppercase"></div>
-        <div class="field"><label>You are</label><select id="jLabel"><option>Wife</option><option>Husband</option></select></div>
-        <button class="btn primary" style="width:100%" onclick="doJoin()">Join household</button>`}
-      <div class="err" id="sErr"></div>
-      <p style="margin-top:14px"><button class="link" onclick="logout()">Log out</button></p></div>`;
+        g.innerHTML = `<div class="card">
+          <div class="brand" style="margin-bottom:14px"><span class="dot">₹</span> Set up your household</div>
+          <p style="color:var(--muted);margin-top:0">Do this once. Create a 4-digit PIN for each of you — that's how you'll log in. No email needed.</p>
+          <div class="field"><label>Household name</label><input id="suName" value="Our Household"></div>
+          <div class="row">
+            <div class="field"><label>Husband's PIN</label><input id="suHP" class="pin-input" type="password" inputmode="numeric" maxlength="4" placeholder="••••" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)"></div>
+            <div class="field"><label>Wife's PIN</label><input id="suWP" class="pin-input" type="password" inputmode="numeric" maxlength="4" placeholder="••••" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)"></div>
+          </div>
+          <div class="field"><label>I am</label><select id="suLabel"><option>Husband</option><option>Wife</option></select></div>
+          <button class="btn primary" style="width:100%" onclick="doSetup()">Create &amp; enter</button>
+          <div class="err" id="sErr"></div></div>`;
         return;
       }
-      $("#gate").innerHTML = `<div class="card"><div class="brand"><span class="dot">₹</span> Loading…</div></div>`;
-    }
-    async function doAuth() {
-      const pin = $("#aPin").value.trim(), iden = $("#aId").value.toLowerCase(), err = $("#aErr"); err.textContent = "";
-      if (!pin || pin.length !== 4) return err.textContent = "Enter a 4-digit PIN.";
-      const email = `${iden}_${pin}@household.local`;
-      const pass = `pin_${pin}_secure_hf`;
-
-      if (authMode === "signup") {
-        const { data, error } = await sb.auth.signUp({ email, password: pass });
-        if (error) return err.textContent = error.message;
-        if (!data.session) {
-          const { error: e2 } = await sb.auth.signInWithPassword({ email, password: pass });
-          if (e2) return err.textContent = "PIN created, but couldn't sign in. Check if email confirmation is enabled on Supabase.";
-        }
-      } else {
-        const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-        if (error) return err.textContent = error.message.includes("Invalid login") ? "Incorrect PIN or Identity" : error.message;
+      if (mode === "login") {
+        g.innerHTML = `<div class="card">
+          <div class="brand" style="margin-bottom:14px"><span class="dot">₹</span> Household Finance</div>
+          <p style="color:var(--muted);margin-top:0">Who's using the app?</p>
+          <div class="idpick" id="idpick">
+            <button data-u="Husband" class="${loginLabel === 'Husband' ? 'sel' : ''}" onclick="selectLoginLabel('Husband')">Husband</button>
+            <button data-u="Wife" class="${loginLabel === 'Wife' ? 'sel' : ''}" onclick="selectLoginLabel('Wife')">Wife</button>
+          </div>
+          <div class="field"><label>Enter your 4-digit PIN</label><input id="lPin" class="pin-input" type="password" inputmode="numeric" maxlength="4" placeholder="••••" oninput="onPinInput(this)"></div>
+          <button class="btn primary" style="width:100%" onclick="doLogin()">Log in</button>
+          <div class="err" id="lErr"></div></div>`;
+        if (loginLabel) { const el = $("#lPin"); if (el) el.focus(); }
+        return;
       }
+      g.innerHTML = `<div class="card"><div class="brand"><span class="dot">₹</span> Loading…</div></div>`;
     }
-    async function doCreate() {
-      const err = $("#sErr"); err.textContent = "";
-      const { error } = await sb.rpc("create_household", { p_name: $("#sName").value, p_label: $("#sLabel").value });
-      if (error) return err.textContent = error.message;
-      route();
-    }
-    async function doJoin() {
-      const err = $("#sErr"); err.textContent = "";
-      const code = $("#jCode").value.trim(); if (!code) return err.textContent = "Enter the household code.";
-      const { error } = await sb.rpc("join_household", { p_code: code, p_label: $("#jLabel").value });
-      if (error) return err.textContent = error.message;
-      route();
-    }
-    async function logout() { await sb.auth.signOut(); }
+    function selectLoginLabel(l) { loginLabel = l; document.querySelectorAll("#idpick button").forEach(b => b.classList.toggle("sel", b.dataset.u === l)); const el = $("#lPin"); if (el) { el.value = ""; el.focus(); } }
+    function onPinInput(el) { el.value = el.value.replace(/[^0-9]/g, "").slice(0, 4); if (el.value.length === 4 && loginLabel) doLogin(); }
 
-    async function route() {
+    async function ensureSession() {
       const { data: { session } } = await sb.auth.getSession();
-      if (!session) { showGate("auth"); return; }
-      showGate("loading");
-      const { data, error } = await sb.rpc("my_household");
-      if (error) { showGate("auth"); toast(error.message, "danger"); return; }
-      if (!data || !data.length) { showGate("setup"); return; }
-      state.household = data[0];
-      state.settings.currentUser = state.household.label || "Husband";
-      await loadAll();
-      showApp(); renderUserSeg(); switchView("dashboard");
+      if (session) return;
+      const { error } = await sb.auth.signInAnonymously();
+      if (error) throw new Error(error.message);
     }
+    async function doSetup() {
+      const err = $("#sErr"); err.textContent = "";
+      const name = $("#suName").value, hp = $("#suHP").value, wp = $("#suWP").value, label = $("#suLabel").value;
+      if (hp.length !== 4 || wp.length !== 4) return err.textContent = "Both PINs must be exactly 4 digits.";
+      const { error } = await sb.rpc("setup_household", { p_name: name, p_husband_pin: hp, p_wife_pin: wp, p_my_label: label });
+      if (error) return err.textContent = error.message;
+      await loadHousehold();
+    }
+    async function doLogin() {
+      const err = $("#lErr"); err.textContent = "";
+      if (!loginLabel) return err.textContent = "Choose Husband or Wife first.";
+      const pin = $("#lPin").value;
+      if (pin.length !== 4) return err.textContent = "Enter your 4-digit PIN.";
+      const { error } = await sb.rpc("login_pin", { p_label: loginLabel, p_pin: pin });
+      if (error) { err.textContent = error.message.includes("Incorrect") ? "Incorrect PIN." : error.message; const el = $("#lPin"); if (el) el.value = ""; return; }
+      await loadHousehold();
+    }
+    async function loadHousehold() {
+      const { data, error } = await sb.rpc("my_household");
+      if (error || !data || !data.length) { showGate("login"); return; }
+      state.household = data[0]; state.me = data[0].label;
+      await loadAll(); enterApp();
+    }
+    function enterApp() { showApp(); renderIdentity(); switchView("dashboard"); }
+    function logout() { loginLabel = null; showGate("login"); }
 
     /* ===========================================================================
        BOOT
        =========================================================================== */
-    (function boot() {
+    (async function boot() {
       try { const t = localStorage.getItem("hf_theme"); if (t) state.settings.theme = t; } catch (e) { }
       applyTheme();
       if (SUPABASE_URL.includes("YOUR-PROJECT") || SUPABASE_ANON_KEY.includes("YOUR-ANON")) { showGate("config"); return; }
-      sb.auth.onAuthStateChange((event) => { if (event === "SIGNED_IN" || event === "SIGNED_OUT") route(); });
-      route();
+      showGate("loading");
+      try { await ensureSession(); }
+      catch (e) { showGate("authfail", e.message); return; }
+      try {
+        const { data, error } = await sb.rpc("household_exists");
+        if (error) throw error;
+        showGate(data ? "login" : "setup");
+      } catch (e) { showGate("authfail", e.message); }
     })();
   </script>
 </body>
