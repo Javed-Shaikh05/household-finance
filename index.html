@@ -696,13 +696,66 @@
       margin-top: 4px
     }
 
-    .billrow {
-      display: grid;
-      grid-template-columns: 1.1fr 1.5fr .8fr .9fr 1fr auto;
-      gap: 6px;
-      margin-bottom: 6px;
-      align-items: center;
-      min-width: 560px
+    .bill-item-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+      position: relative;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    }
+
+    .bill-item-card .remove-btn {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      font-size: 12px;
+      color: var(--danger);
+      border-color: var(--danger);
+      background: var(--card);
+      box-shadow: var(--shadow);
+      z-index: 10;
+    }
+
+    .bill-item-card .remove-btn:hover {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .tabs {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    @media(max-width: 600px) {
+      .modal {
+        max-height: 95vh;
+        border-radius: 12px;
+      }
+
+      .brand {
+        font-size: 16px;
+      }
+
+      .balance {
+        font-size: 32px;
+      }
+
+      .btn {
+        padding: 10px 14px;
+      }
+
+      .hero {
+        gap: 16px;
+      }
     }
   </style>
 </head>
@@ -778,26 +831,48 @@
     function monthLabel(key) { const [y, m] = key.split("-"); return new Date(y, m - 1, 1).toLocaleDateString("en-US", { month: "short", year: "numeric" }); }
 
     /* money calculations */
-    function totalIncome() { return state.incomes.reduce((a, b) => a + Number(b.amount), 0); }
-    function totalExpense() { return state.expenses.reduce((a, b) => a + Number(b.amount), 0); }
+    function totalIncome() { 
+      const realIncomes = state.incomes.filter(i => !i.source.startsWith("Transfer")).reduce((a, b) => a + Number(b.amount), 0);
+      const transfersSent = state.expenses.filter(e => e.category === "Transfer").reduce((a, b) => a + Number(b.amount), 0);
+      return realIncomes - transfersSent; 
+    }
+    function totalExpense() { 
+      return state.expenses.filter(e => e.category !== "Transfer").reduce((a, b) => a + Number(b.amount), 0); 
+    }
     function balance() { return totalIncome() - totalExpense(); }
     function overspendMap() {
       const tx = [];
-      state.incomes.forEach(i => tx.push({ t: "in", date: i.date, amt: Number(i.amount) }));
-      state.expenses.forEach(e => tx.push({ t: "ex", date: e.date, amt: Number(e.amount), id: e.id }));
+      state.incomes.filter(i => !i.source.startsWith("Transfer")).forEach(i => tx.push({ t: "in", date: i.date, amt: Number(i.amount) }));
+      state.expenses.forEach(e => {
+        if (e.category === "Transfer") tx.push({ t: "deduct", date: e.date, amt: Number(e.amount) });
+        else tx.push({ t: "ex", date: e.date, amt: Number(e.amount), id: e.id });
+      });
       tx.sort((a, b) => a.date === b.date ? 0 : (a.date < b.date ? -1 : 1));
       let run = 0; const map = {};
-      for (const x of tx) { if (x.t === "in") run += x.amt; else { run -= x.amt; map[x.id] = run < 0; } }
+      for (const x of tx) { 
+        if (x.t === "in") run += x.amt; 
+        else if (x.t === "deduct") run -= x.amt;
+        else { run -= x.amt; map[x.id] = run < 0; } 
+      }
       return map;
     }
     function monthStats(key) {
-      const inc = state.incomes.filter(i => monthKey(i.date) === key).reduce((a, b) => a + Number(b.amount), 0);
-      const exp = state.expenses.filter(e => monthKey(e.date) === key).reduce((a, b) => a + Number(b.amount), 0);
+      const realInc = state.incomes.filter(i => monthKey(i.date) === key && !i.source.startsWith("Transfer")).reduce((a, b) => a + Number(b.amount), 0);
+      const transfersSent = state.expenses.filter(e => monthKey(e.date) === key && e.category === "Transfer").reduce((a, b) => a + Number(b.amount), 0);
+      const exp = state.expenses.filter(e => monthKey(e.date) === key && e.category !== "Transfer").reduce((a, b) => a + Number(b.amount), 0);
+      const inc = realInc - transfersSent;
       return { inc, exp, net: inc - exp };
     }
-    function userExpense(u, key) { return state.expenses.filter(e => e.user === u && (!key || monthKey(e.date) === key)).reduce((a, b) => a + Number(b.amount), 0); }
-    function userIncome(u) { return state.incomes.filter(i => i.user === u).reduce((a, b) => a + Number(b.amount), 0); }
-    function categorySpend(key) { const m = {}; state.expenses.filter(e => monthKey(e.date) === key).forEach(e => { m[e.category] = (m[e.category] || 0) + Number(e.amount); }); return m; }
+    function userExpense(u, key) { 
+      return state.expenses.filter(e => e.user === u && e.category !== "Transfer" && (!key || monthKey(e.date) === key)).reduce((a, b) => a + Number(b.amount), 0); 
+    }
+    function userIncome(u) { 
+      const realInc = state.incomes.filter(i => i.user === u && !i.source.startsWith("Transfer")).reduce((a, b) => a + Number(b.amount), 0); 
+      const transferInc = state.incomes.filter(i => i.user === u && i.source.startsWith("Transfer")).reduce((a, b) => a + Number(b.amount), 0);
+      const transfersSent = state.expenses.filter(e => e.user === u && e.category === "Transfer").reduce((a, b) => a + Number(b.amount), 0);
+      return realInc + transferInc - transfersSent;
+    }
+    function categorySpend(key) { const m = {}; state.expenses.filter(e => monthKey(e.date) === key && e.category !== "Transfer").forEach(e => { m[e.category] = (m[e.category] || 0) + Number(e.amount); }); return m; }
 
     /* ---------------------------------------------------------------------------
        SUPABASE LOAD
@@ -870,9 +945,10 @@
           <span><span class="pill h">Husband</span> ${fmt(userIncome("Husband"))}</span>
           <span>${fmt(userIncome("Wife"))} <span class="pill w">Wife</span></span>
         </div>
-        <div style="display:flex;gap:10px;margin-top:16px">
-          <button class="btn primary" style="flex:1" onclick="expenseModal()">+ Add expense</button>
-          <button class="btn" style="flex:1" onclick="incomeModal()">+ Add income</button>
+        <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+          <button class="btn primary" style="flex:1;min-width:110px" onclick="expenseModal()">+ Expense</button>
+          <button class="btn" style="flex:1;min-width:110px" onclick="incomeModal()">+ Income</button>
+          <button class="btn" style="flex:1;min-width:110px;border-color:var(--primary);color:var(--primary)" onclick="transferModal()">+ Transfer</button>
         </div>
       </div>
     </div>
@@ -1161,6 +1237,52 @@
       if (wasNeg && balance() >= 0) toast("Overspending cleared — balance is positive again 🎉"); else toast("Income saved");
     }
 
+    /* ---------- Transfer ---------- */
+    function transferModal() {
+      const u = state.settings.currentUser;
+      const other = u === "Husband" ? "Wife" : "Husband";
+      openModal("Transfer Money", `
+    <p style="color:var(--muted);margin-top:0">Send money to your spouse.</p>
+    <div class="row"><div class="field"><label>Amount (₹)</label><input id="tAmt" type="number" min="0" step="0.01"></div>
+      <div class="field"><label>Date</label><input id="tDate" type="date" value="${todayISO()}"></div></div>
+    <div class="row">
+      <div class="field"><label>From</label><select id="tFrom" onchange="document.getElementById('tTo').value = this.value === 'Husband' ? 'Wife' : 'Husband'"><option ${u === 'Husband' ? 'selected' : ''}>Husband</option><option ${u === 'Wife' ? 'selected' : ''}>Wife</option></select></div>
+      <div class="field"><label>To</label><select id="tTo" disabled><option ${other === 'Husband' ? 'selected' : ''}>Husband</option><option ${other === 'Wife' ? 'selected' : ''}>Wife</option></select></div>
+    </div>
+    <div class="field"><label class="check"><input id="tDeductIncome" type="checkbox" checked> Deduct from sender's income (keeps total household income unchanged)</label></div>
+    <div class="field"><label>Notes (optional)</label><textarea id="tNotes" rows="2" placeholder="e.g. For groceries"></textarea></div>`,
+        `<button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveTransfer()">Send transfer</button>`);
+    }
+
+    async function saveTransfer() {
+      const amt = Number($("#tAmt").value);
+      if (!amt || amt <= 0) return toast("Enter a valid amount.", "warn");
+      const from = $("#tFrom").value;
+      const to = $("#tTo").value;
+      const date = $("#tDate").value;
+      const notes = $("#tNotes").value.trim();
+      const deductIncome = $("#tDeductIncome").checked;
+      const hid = state.household.id;
+
+      // To avoid database check constraints on negative income amounts,
+      // we insert a positive Expense row for the sender. If "deductIncome" is true,
+      // we use category "Transfer", which the UI calculates as a deduction from Income
+      // rather than counting it as a Household Expense.
+      const expCategory = deductIncome ? "Transfer" : "Transfer Expense";
+
+      const expPayload = { household_id: hid, payer: from, amount: amt, date, category: expCategory, subcategory: "Sent to " + to, notes, recurring: false };
+      const incPayload = { household_id: hid, payer: to, amount: amt, date, source: `Transfer from ${from}`, notes, recurring: false };
+
+      const { error: e1 } = await sb.from("expenses").insert(expPayload);
+      if (e1) return toast(e1.message, "danger");
+      
+      const { error: e2 } = await sb.from("incomes").insert(incPayload);
+      if (e2) return toast(e2.message, "danger");
+
+      await loadAll(); closeModal(); renderCurrent();
+      toast("Transfer completed successfully");
+    }
+
     let billItems = [];
     function expenseModal(id) {
       billItems = [];
@@ -1202,13 +1324,18 @@
     function billTotal() { return billItems.reduce((a, b) => a + Number(b.amount || 0), 0); }
     function renderBillItems() {
       const c = $("#billItems"); if (!c) return;
-      c.innerHTML = billItems.map((it, i) => `<div class="billrow">
-    <select onchange="billItems[${i}].category=this.value">${Object.keys(state.categories).map(cat => `<option ${it.category === cat ? 'selected' : ''}>${cat}</option>`).join("")}</select>
-    <input placeholder="Item (e.g. Milk)" value="${it.name}" oninput="billItems[${i}].name=this.value">
-    <input type="number" placeholder="Qty" value="${it.qty}" oninput="billItems[${i}].qty=this.value">
-    <select onchange="billItems[${i}].unit=this.value">${UNITS.map(u => `<option ${it.unit === u ? 'selected' : ''}>${u}</option>`).join("")}</select>
-    <input type="number" placeholder="Amount ₹" value="${it.amount}" oninput="billItems[${i}].amount=this.value;updateBillTotal()">
-    <button class="icon-btn" type="button" onclick="removeBillItem(${i})">✕</button></div>`).join("") || '<div style="color:var(--muted)">No items yet — add one.</div>';
+      c.innerHTML = billItems.map((it, i) => `<div class="bill-item-card">
+    <button class="icon-btn remove-btn" type="button" onclick="removeBillItem(${i})">✕</button>
+    <div class="grid g2" style="margin-bottom:8px;gap:8px">
+      <div class="field" style="margin:0"><label>Item Name</label><input placeholder="e.g. Milk" value="${it.name}" oninput="billItems[${i}].name=this.value"></div>
+      <div class="field" style="margin:0"><label>Category</label><select onchange="billItems[${i}].category=this.value">${Object.keys(state.categories).map(cat => `<option ${it.category === cat ? 'selected' : ''}>${cat}</option>`).join("")}</select></div>
+    </div>
+    <div class="grid" style="grid-template-columns:1fr 1fr 1.5fr;gap:8px">
+      <div class="field" style="margin:0"><label>Qty</label><input type="number" placeholder="e.g. 1" value="${it.qty}" oninput="billItems[${i}].qty=this.value"></div>
+      <div class="field" style="margin:0"><label>Unit</label><select onchange="billItems[${i}].unit=this.value">${UNITS.map(u => `<option ${it.unit === u ? 'selected' : ''}>${u}</option>`).join("")}</select></div>
+      <div class="field" style="margin:0"><label>Amount (₹)</label><input type="number" placeholder="₹" value="${it.amount}" oninput="billItems[${i}].amount=this.value;updateBillTotal()"></div>
+    </div>
+    </div>`).join("") || '<div style="color:var(--muted);padding:10px 0">No items yet — add one below.</div>';
       updateBillTotal();
     }
     function updateBillTotal() { const el = $("#billTotal"); if (el) el.textContent = fmt(billTotal()); }
@@ -1284,12 +1411,13 @@
       if (mode === "auth") {
         $("#gate").innerHTML = `<div class="card">
       <div class="brand" style="margin-bottom:16px"><span class="dot">₹</span> Household Finance</div>
-      <div class="tab2"><button class="${authMode === 'signin' ? 'active' : ''}" onclick="authMode='signin';showGate('auth')">Sign in</button><button class="${authMode === 'signup' ? 'active' : ''}" onclick="authMode='signup';showGate('auth')">Create account</button></div>
-      <div class="field"><label>Email</label><input id="aEmail" type="email" placeholder="you@email.com"></div>
-      <div class="field"><label>Password</label><input id="aPass" type="password" placeholder="at least 6 characters"></div>
-      <button class="btn primary" style="width:100%" onclick="doAuth()">${authMode === 'signin' ? 'Sign in' : 'Create account'}</button>
+      <div class="tab2"><button class="${authMode === 'signin' ? 'active' : ''}" onclick="authMode='signin';showGate('auth')">Sign in</button><button class="${authMode === 'signup' ? 'active' : ''}" onclick="authMode='signup';showGate('auth')">Create PIN</button></div>
+      <div style="text-align:center;margin-bottom:16px;color:var(--muted)">${authMode === 'signin' ? 'Select your identity and enter your 4-digit PIN' : 'Create a 4-digit PIN for your account'}</div>
+      <div class="field"><label>Identity</label><select id="aId"><option>Husband</option><option>Wife</option></select></div>
+      <div class="field"><label>4-Digit PIN</label><input id="aPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="••••" style="font-size:32px;letter-spacing:16px;text-align:center;padding:12px"></div>
+      <button class="btn primary" style="width:100%" onclick="doAuth()">${authMode === 'signin' ? 'Sign in' : 'Create PIN'}</button>
       <div class="err" id="aErr"></div></div>`;
-        $("#aPass").addEventListener("keydown", e => { if (e.key === "Enter") doAuth(); });
+        $("#aPin").addEventListener("keydown", e => { if (e.key === "Enter") doAuth(); });
         return;
       }
       if (mode === "setup") {
@@ -1313,17 +1441,22 @@
       $("#gate").innerHTML = `<div class="card"><div class="brand"><span class="dot">₹</span> Loading…</div></div>`;
     }
     async function doAuth() {
-      const email = $("#aEmail").value.trim(), pass = $("#aPass").value, err = $("#aErr"); err.textContent = "";
-      if (!email || !pass) return err.textContent = "Enter email and password.";
+      const pin = $("#aPin").value.trim(), iden = $("#aId").value.toLowerCase(), err = $("#aErr"); err.textContent = "";
+      if (!pin || pin.length !== 4) return err.textContent = "Enter a 4-digit PIN.";
+      const email = `${iden}_${pin}@household.local`;
+      const pass = `pin_${pin}_secure_hf`;
+
       if (authMode === "signup") {
         const { data, error } = await sb.auth.signUp({ email, password: pass });
         if (error) return err.textContent = error.message;
-        if (!data.session) { err.style.color = "var(--primary)"; return err.textContent = "Account created. Check your email to confirm, then sign in."; }
+        if (!data.session) {
+          const { error: e2 } = await sb.auth.signInWithPassword({ email, password: pass });
+          if (e2) return err.textContent = "PIN created, but couldn't sign in. Check if email confirmation is enabled on Supabase.";
+        }
       } else {
         const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-        if (error) return err.textContent = error.message;
+        if (error) return err.textContent = error.message.includes("Invalid login") ? "Incorrect PIN or Identity" : error.message;
       }
-      // onAuthStateChange handles routing
     }
     async function doCreate() {
       const err = $("#sErr"); err.textContent = "";
