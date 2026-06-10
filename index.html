@@ -87,7 +87,7 @@
     th, td { text-align: left; padding: 11px 10px; border-bottom: 1px solid var(--line); font-size: 13px; white-space: nowrap }
     th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .04em }
     tr:last-child td { border-bottom: 0 }
-    .row-act { display: flex; gap: 6px }
+    .row-act { display: flex; gap: 6px; align-items: center }
     .link { color: var(--primary); background: none; border: 0; font-weight: 600; padding: 2px 4px }
     .link.del { color: var(--danger) }
 
@@ -99,6 +99,8 @@
     @media(max-width:560px) { .row { grid-template-columns: 1fr } }
     .check { display: flex; align-items: center; gap: 8px; font-weight: 500 }
     .check input { width: 18px; height: 18px }
+    .inline-add { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: -4px 0 12px }
+    .inline-add input { flex: 1; min-width: 140px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 10px; padding: 9px 12px }
 
     .overlay { position: fixed; inset: 0; background: rgba(8, 16, 13, .45); display: none; align-items: center; justify-content: center; z-index: 60; padding: 16px }
     .overlay.show { display: flex }
@@ -126,6 +128,11 @@
     .filters .field { margin-bottom: 0; min-width: 140px }
     .banner { background: var(--danger-soft); border: 1px solid var(--danger); color: var(--danger); border-radius: 12px; padding: 12px 14px; font-weight: 600; margin-bottom: 16px; display: flex; gap: 10px; align-items: flex-start }
 
+    /* fixed-bill checklist rows */
+    .bill-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; margin-bottom: 8px; background: var(--surface); flex-wrap: wrap }
+    .bill-row.paid { border-color: var(--primary); background: var(--primary-soft) }
+    .bill-row .amt-in { width: 120px; border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 10px; padding: 8px 10px }
+
     /* gate (login / setup) */
     #gate { position: fixed; inset: 0; background: var(--bg); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 18px }
     #gate .card { max-width: 420px; width: 100% }
@@ -136,7 +143,6 @@
     .idpick button.sel[data-u="Wife"] { border-color: var(--wife); background: var(--wife-soft); color: var(--wife) }
     .pin-input { font-size: 26px; letter-spacing: 10px; text-align: center; padding: 12px !important; font-weight: 700 }
 
-    /* transfer + bill items */
     .transfer-dir { display: flex; align-items: center; gap: 10px; justify-content: center; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-bottom: 14px; font-weight: 600 }
     .bill-item-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 12px; position: relative }
     .bill-item-card .remove-btn { position: absolute; top: -10px; right: -10px; width: 26px; height: 26px; border-radius: 50%; font-size: 12px; color: var(--danger); border-color: var(--danger); background: var(--card); box-shadow: var(--shadow); z-index: 10 }
@@ -170,7 +176,7 @@
       <button data-v="expenses" onclick="switchView('expenses')">Expenses</button>
       <button data-v="income" onclick="switchView('income')">Income</button>
       <button data-v="calendar" onclick="switchView('calendar')">Calendar</button>
-      <button data-v="categories" onclick="switchView('categories')">Budgets &amp; Categories</button>
+      <button data-v="bills" onclick="switchView('bills')">Fixed Bills</button>
       <button data-v="reports" onclick="switchView('reports')">Reports</button>
       <button data-v="settings" onclick="switchView('settings')">Settings</button>
     </div>
@@ -200,7 +206,8 @@
     let state = {
       settings: { theme: "light", currency: "₹" },
       household: null, me: null,
-      incomes: [], expenses: [], transfers: [], categories: {}, budgets: {}
+      incomes: [], expenses: [], transfers: [],
+      categories: {}, catQty: {}, fixedBills: []
     };
 
     const $ = s => document.querySelector(s);
@@ -210,11 +217,12 @@
     const curMonth = () => todayISO().slice(0, 7);
     const partner = () => state.me === "Husband" ? "Wife" : "Husband";
     const cls = l => l === "Husband" ? "h" : "w";
+    const esc = s => String(s == null ? "" : s).replace(/'/g, "\\'");
     function fmt(n) { const v = Number(n || 0); const s = Math.abs(v).toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 2 }); return (v < 0 ? "-" : "") + state.settings.currency + s; }
     function monthLabel(key) { const [y, m] = key.split("-"); return new Date(y, m - 1, 1).toLocaleDateString("en-US", { month: "short", year: "numeric" }); }
 
-    /* money calculations (transfers live in their own table, so income/expense
-       sums are clean and a transfer never changes the household total) */
+    /* money calculations (transfers live in their own table; a transfer never
+       changes the household total) */
     function totalIncome() { return state.incomes.reduce((a, b) => a + Number(b.amount), 0); }
     function totalExpense() { return state.expenses.reduce((a, b) => a + Number(b.amount), 0); }
     function balance() { return totalIncome() - totalExpense(); }
@@ -222,7 +230,6 @@
     function transfersOut(u) { return state.transfers.filter(t => t.from_label === u).reduce((a, b) => a + Number(b.amount), 0); }
     function userIncome(u) { return state.incomes.filter(i => i.user === u).reduce((a, b) => a + Number(b.amount), 0); }
     function userExpense(u, key) { return state.expenses.filter(e => e.user === u && (!key || monthKey(e.date) === key)).reduce((a, b) => a + Number(b.amount), 0); }
-    /* each person's available money: their income + money received - money sent - their spending */
     function personalBalance(u) { return userIncome(u) + transfersIn(u) - transfersOut(u) - userExpense(u); }
     function overspendMap() {
       const tx = [];
@@ -239,25 +246,28 @@
       return { inc, exp, net: inc - exp };
     }
     function categorySpend(key) { const m = {}; state.expenses.filter(e => monthKey(e.date) === key).forEach(e => { m[e.category] = (m[e.category] || 0) + Number(e.amount); }); return m; }
+    /* the expense this month that pays a given fixed bill (or undefined if unpaid) */
+    function billPayment(billId, key) { return state.expenses.find(e => e.fixed_bill_id === billId && monthKey(e.date) === (key || curMonth())); }
 
     /* ---------------------------------------------------------------------------
        SUPABASE LOAD
        --------------------------------------------------------------------------- */
     async function loadAll() {
       const hid = state.household.id;
-      const [inc, exp, tr, cats, buds] = await Promise.all([
+      const [inc, exp, tr, cats, fb] = await Promise.all([
         sb.from("incomes").select("*").eq("household_id", hid).order("date", { ascending: false }),
         sb.from("expenses").select("*").eq("household_id", hid).order("date", { ascending: false }),
         sb.from("transfers").select("*").eq("household_id", hid).order("date", { ascending: false }),
         sb.from("categories").select("*").eq("household_id", hid).order("name"),
-        sb.from("budgets").select("*").eq("household_id", hid)
+        sb.from("fixed_bills").select("*").eq("household_id", hid).order("name")
       ]);
-      // .filter(...) ignores any leftover rows from the old transfer method, just in case
+      // .filter(...) ignores leftover rows from the old transfer method, just in case
       state.incomes = (inc.data || []).map(r => ({ ...r, user: r.payer })).filter(i => !(i.source || "").startsWith("Transfer from "));
       state.expenses = (exp.data || []).map(r => ({ ...r, user: r.payer })).filter(e => e.category !== "Transfer" && e.category !== "Transfer Expense");
       state.transfers = tr.data || [];
-      state.categories = {}; (cats.data || []).forEach(c => state.categories[c.name] = c.subcategories || []);
-      state.budgets = {}; (buds.data || []).forEach(b => state.budgets[b.category] = Number(b.monthly_limit));
+      state.categories = {}; state.catQty = {};
+      (cats.data || []).forEach(c => { state.categories[c.name] = c.subcategories || []; state.catQty[c.name] = !!c.tracks_qty; });
+      state.fixedBills = fb.data || [];
     }
 
     /* ---------------------------------------------------------------------------
@@ -269,7 +279,7 @@
 
     let currentView = "dashboard";
     function switchView(v) { currentView = v; document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("active", b.dataset.v === v)); renderCurrent(); }
-    function renderCurrent() { destroyCharts(); ({ dashboard: renderDashboard, expenses: renderExpenses, income: renderIncome, calendar: renderCalendar, categories: renderCategories, reports: renderReports, settings: renderSettings }[currentView])(); }
+    function renderCurrent() { destroyCharts(); ({ dashboard: renderDashboard, expenses: renderExpenses, income: renderIncome, calendar: renderCalendar, bills: renderBills, reports: renderReports, settings: renderSettings }[currentView])(); }
 
     function openModal(t, b, f) { $("#modal").innerHTML = `<div class="modal-head"><h3>${t}</h3><button class="icon-btn" onclick="closeModal()">✕</button></div><div class="modal-body">${b}</div><div class="modal-foot">${f}</div>`; $("#overlay").classList.add("show"); }
     function closeModal() { $("#overlay").classList.remove("show"); }
@@ -290,12 +300,11 @@
       const comb = balance(), m = curMonth(), st = monthStats(m), tInc = totalIncome();
       const hBal = personalBalance("Husband"), wBal = personalBalance("Wife"), myBal = personalBalance(state.me);
       const hShare = tInc ? userIncome("Husband") / tInc * 100 : 50, wShare = 100 - hShare;
-      const spend = categorySpend(m);
-      const overBudget = Object.keys(state.budgets).filter(c => state.budgets[c] > 0 && (spend[c] || 0) > state.budgets[c]);
+      const fbPaid = state.fixedBills.filter(b => billPayment(b.id, m)).length;
+      const fbTotal = state.fixedBills.reduce((a, b) => { const e = billPayment(b.id, m); return a + (e ? Number(e.amount) : 0); }, 0);
       let banner = "";
       if (comb < 0) banner += `<div class="banner">⚠️ Combined household balance is negative — overspent by ${fmt(Math.abs(comb))}. Add income to clear it.</div>`;
       if (myBal < 0) banner += `<div class="banner">⚠️ Your balance (${state.me}) is negative (${fmt(myBal)}). Add income or receive a transfer.</div>`;
-      if (overBudget.length) banner += `<div class="banner" style="border-color:var(--warn);color:var(--warn)">📊 Over budget this month: ${overBudget.join(", ")}.</div>`;
       $("#view").innerHTML = `${banner}
     <div class="card hero" style="margin-bottom:16px">
       <div>
@@ -322,6 +331,11 @@
         </div>
       </div>
     </div>
+    ${state.fixedBills.length ? `<div class="card" style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <div><div class="label">Fixed bills · ${monthLabel(m)}</div>
+        <div style="font-weight:700;font-size:17px">${fbPaid} of ${state.fixedBills.length} paid <span style="color:var(--muted);font-weight:500">· ${fmt(fbTotal)} so far</span></div></div>
+      <button class="btn" onclick="switchView('bills')">Open checklist</button>
+    </div>` : ""}
     <div class="grid g2" style="margin-bottom:16px">
       <div class="card"><h3 style="margin-bottom:12px">Income vs Expenses</h3><div class="chartbox"><canvas id="c_ie"></canvas></div></div>
       <div class="card"><h3 style="margin-bottom:12px">Net savings / overspending trend</h3><div class="chartbox"><canvas id="c_trend"></canvas></div></div>
@@ -381,7 +395,7 @@
       <div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Category</th><th>Sub-category</th><th>Qty</th><th>By</th><th style="text-align:right">Amount</th><th></th></tr></thead><tbody>
       ${list.length ? list.map(e => `<tr>
         <td class="num">${e.date}</td>
-        <td>${e.category} ${e.bill_id ? `<span class="pill">🧾 ${e.store || "bill"}</span>` : ''} ${om[e.id] ? '<span class="pill danger">overspent</span>' : ''}</td>
+        <td>${e.category} ${e.bill_id ? `<span class="pill">🧾 ${e.store || "bill"}</span>` : ''} ${e.fixed_bill_id ? '<span class="pill">📌 fixed</span>' : ''} ${om[e.id] ? '<span class="pill danger">overspent</span>' : ''}</td>
         <td>${e.subcategory || "—"}${e.notes ? `<div style="color:var(--muted);font-size:12px">${e.notes}</div>` : ''}</td>
         <td class="num">${e.quantity ? e.quantity + " " + (e.unit || "") : "—"}</td>
         <td><span class="pill ${cls(e.user)}">${e.user}</span></td>
@@ -464,36 +478,94 @@
       openModal(new Date(iso).toDateString(), body, `<button class="btn" onclick="closeModal()">Close</button>`);
     }
 
-    /* ---------- Budgets & Categories ---------- */
-    function renderCategories() {
-      const cats = Object.keys(state.categories), m = curMonth(), spend = categorySpend(m);
+    /* ---------- Fixed Bills (checklist) + manage bills + manage categories ---------- */
+    function renderBills() {
+      const m = curMonth();
+      const paidCount = state.fixedBills.filter(b => billPayment(b.id, m)).length;
+      const checklist = state.fixedBills.map(b => {
+        const e = billPayment(b.id, m);
+        if (e) {
+          return `<div class="bill-row paid">
+          <div><strong>${b.name}</strong> <span class="pill">✓ paid ${e.date}</span><div style="color:var(--muted);font-size:12px">${b.category} · <span class="pill ${cls(e.user)}" style="font-size:11px">${e.user}</span></div></div>
+          <div class="row-act"><span class="num" style="font-weight:700">${fmt(e.amount)}</span><button class="link" onclick="expenseModal('${e.id}')">Edit</button><button class="link del" onclick="markUnpaid('${b.id}')">Undo</button></div>
+        </div>`;
+        }
+        return `<div class="bill-row">
+        <div><strong>${b.name}</strong><div style="color:var(--muted);font-size:12px">${b.category} · not paid yet</div></div>
+        <div class="row-act"><input id="fb_${b.id}" class="amt-in num" type="number" min="0" step="0.01" placeholder="Amount ₹"><button class="btn sm primary" onclick="markPaid('${b.id}')">Mark paid</button></div>
+      </div>`;
+      }).join("");
+
+      const cats = Object.keys(state.categories);
       $("#view").innerHTML = `
-    <div class="head-row"><h2>Budgets &amp; Categories</h2><button class="btn primary" onclick="categoryModal()">+ Add category</button></div>
-    <div class="grid g2">
-    ${cats.map(c => {
-        const used = spend[c] || 0, lim = state.budgets[c] || 0, pct = lim ? Math.min(100, used / lim * 100) : 0, over = lim && used > lim;
-        return `<div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center"><h3>${c}</h3>
+    <div class="head-row"><h2>Fixed Bills</h2><span class="pill">${paidCount} / ${state.fixedBills.length} paid · ${monthLabel(m)}</span></div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h3 style="margin-bottom:4px">This month's checklist</h3>
+      <p style="color:var(--muted);margin-top:0">Enter the amount and tap “Mark paid”. The amount can be different every month. Marking paid adds it to your expenses.</p>
+      ${state.fixedBills.length ? checklist : '<div class="empty">No fixed bills yet. Add some below (e.g. Rent, Electricity, EMI).</div>'}
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="head-row" style="margin-bottom:12px"><h3>Manage fixed bills</h3><button class="btn sm primary" onclick="fixedBillModal()">+ Add fixed bill</button></div>
+      ${state.fixedBills.length ? state.fixedBills.map(b => `<div class="bill-row" style="background:var(--card)">
+        <div><strong>${b.name}</strong><div style="color:var(--muted);font-size:12px">${b.category}</div></div>
+        <div class="row-act"><button class="link" onclick="fixedBillModal('${b.id}')">Edit</button><button class="link del" onclick="delFixedBill('${b.id}')">Delete</button></div>
+      </div>`).join("") : '<div class="empty">None yet.</div>'}
+    </div>
+
+    <div class="card">
+      <div class="head-row" style="margin-bottom:12px"><h3>Categories</h3><button class="btn sm primary" onclick="categoryModal()">+ Add category</button></div>
+      <p style="color:var(--muted);margin-top:0">“Qty/Units” decides whether the expense form shows quantity fields (handy for Grocery/Fuel, not for EMI or Rent).</p>
+      <div class="grid g2">
+      ${cats.map(c => `<div class="card" style="box-shadow:none">
+        <div style="display:flex;justify-content:space-between;align-items:center"><h3 style="font-size:16px">${c}</h3>
           <div class="row-act"><button class="link" onclick="categoryModal('${encodeURIComponent(c)}')">Edit</button><button class="link del" onclick="delCategory('${encodeURIComponent(c)}')">Delete</button></div></div>
-        <div style="margin:8px 0 4px;display:flex;justify-content:space-between;font-size:13px"><span class="label">Monthly budget</span>
-          <span>${lim ? `<span class="num">${fmt(used)}</span> / <span class="num">${fmt(lim)}</span>` : '<span style="color:var(--muted)">not set</span>'}</span></div>
-        ${lim ? `<div class="splitbar" style="height:8px"><div style="width:${pct}%;background:${over ? 'var(--danger)' : 'var(--primary)'}"></div></div>` : ""}
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin:12px 0">${state.categories[c].map(s => `<span class="pill" style="background:var(--surface);color:var(--ink)">${s}</span>`).join("") || '<span style="color:var(--muted)">No sub-categories</span>'}</div>
-        <div class="row" style="align-items:end">
-          <div class="field" style="margin:0"><label>Set budget (₹)</label><input type="number" min="0" value="${lim || ''}" onchange="setBudget('${encodeURIComponent(c)}',this.value)"></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0">${(state.categories[c] || []).map(s => `<span class="pill" style="background:var(--surface);color:var(--ink)">${s}</span>`).join("") || '<span style="color:var(--muted)">No sub-categories</span>'}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <label class="check" style="font-size:13px"><input type="checkbox" ${state.catQty[c] ? 'checked' : ''} onchange="toggleCatQty('${encodeURIComponent(c)}',this.checked)"> Track Qty/Units</label>
           <button class="btn sm" onclick="addSubModal('${encodeURIComponent(c)}')">+ Sub-category</button>
-        </div></div>`;
-      }).join("")}
+        </div></div>`).join("")}
+      </div>
     </div>`;
     }
-    async function setBudget(enc, val) {
-      const c = decodeURIComponent(enc), v = Number(val), hid = state.household.id;
-      let error;
-      if (v > 0) { ({ error } = await sb.from("budgets").upsert({ household_id: hid, category: c, monthly_limit: v }, { onConflict: "household_id,category" })); }
-      else { ({ error } = await sb.from("budgets").delete().eq("household_id", hid).eq("category", c)); }
+
+    /* mark a fixed bill paid this month = create a linked expense */
+    async function markPaid(billId) {
+      const b = state.fixedBills.find(x => x.id === billId); if (!b) return;
+      const amt = Number(($("#fb_" + billId) || {}).value); if (!amt || amt <= 0) return toast("Enter the amount first.", "warn");
+      const { error } = await sb.from("expenses").insert({ household_id: state.household.id, payer: state.me, amount: amt, date: todayISO(), category: b.category, subcategory: b.name, fixed_bill_id: billId, recurring: false });
       if (error) return toast(error.message, "danger");
-      await loadAll(); toast(`Budget for ${c} saved`);
+      await loadAll(); renderBills(); toast(`${b.name} marked paid (${fmt(amt)})`);
     }
+    async function markUnpaid(billId) {
+      const e = billPayment(billId, curMonth()); if (!e) return;
+      const { error } = await sb.from("expenses").delete().eq("id", e.id);
+      if (error) return toast(error.message, "danger");
+      await loadAll(); renderBills(); toast("Marked unpaid");
+    }
+    function fixedBillModal(id) {
+      const b = id ? state.fixedBills.find(x => x.id === id) : { name: "", category: Object.keys(state.categories)[0] || "" };
+      openModal(id ? "Edit fixed bill" : "Add fixed bill", `
+    <div class="field"><label>Bill name</label><input id="fbName" placeholder="e.g. House Rent, Car EMI" value="${b.name}"></div>
+    <div class="field"><label>Category</label><select id="fbCat">${Object.keys(state.categories).map(c => `<option ${b.category === c ? 'selected' : ''}>${c}</option>`).join("")}</select></div>`,
+        `<button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveFixedBill('${id || ""}')">Save</button>`);
+    }
+    async function saveFixedBill(id) {
+      const name = $("#fbName").value.trim(); if (!name) return toast("Enter a bill name.", "warn");
+      const payload = { household_id: state.household.id, name, category: $("#fbCat").value };
+      let error;
+      if (id) ({ error } = await sb.from("fixed_bills").update(payload).eq("id", id)); else ({ error } = await sb.from("fixed_bills").insert(payload));
+      if (error) return toast(error.message, "danger");
+      await loadAll(); closeModal(); renderBills(); toast("Fixed bill saved");
+    }
+    function delFixedBill(id) {
+      const b = state.fixedBills.find(x => x.id === id); if (!b) return;
+      openModal("Delete fixed bill?", `<p>Remove “${b.name}” from your fixed bills? Any expenses you already recorded for it are kept.</p>`,
+        `<button class="btn" onclick="closeModal()">Cancel</button><button class="btn" style="border-color:var(--danger);color:var(--danger)" onclick="confirmDelFixedBill('${id}')">Delete</button>`);
+    }
+    async function confirmDelFixedBill(id) { const { error } = await sb.from("fixed_bills").delete().eq("id", id); if (error) return toast(error.message, "danger"); await loadAll(); closeModal(); renderBills(); toast("Fixed bill deleted"); }
+    async function toggleCatQty(enc, val) { const c = decodeURIComponent(enc); const { error } = await sb.from("categories").update({ tracks_qty: val }).eq("household_id", state.household.id).eq("name", c); if (error) return toast(error.message, "danger"); await loadAll(); toast(`${c}: Qty/Units ${val ? "on" : "off"}`); }
 
     /* ---------- Reports ---------- */
     let rep = { from: "", to: "", cat: "all", user: "all" };
@@ -563,7 +635,7 @@
       </div>
       <div class="card">
         <h3>Recurring items</h3>
-        <p style="color:var(--muted)">Items marked “repeat monthly”. Post them into the current month in one click.</p>
+        <p style="color:var(--muted)">Income/expenses marked “repeat monthly”. Post them into the current month in one click. (Fixed bills are handled on the Fixed Bills tab.)</p>
         ${(recEx.length || recIn.length) ? `
           ${recIn.map(i => `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--line)"><span>＋ ${i.source} <span class="pill ${cls(i.user)}">${i.user}</span></span><span class="num" style="color:var(--primary)">${fmt(i.amount)}</span></div>`).join("")}
           ${recEx.map(e => `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--line)"><span>－ ${e.category} › ${e.subcategory || "—"}</span><span class="num">${fmt(e.amount)}</span></div>`).join("")}
@@ -577,14 +649,14 @@
       </div>
       <div class="card">
         <h3>Danger zone</h3>
-        <p style="color:var(--muted)">Delete every income, expense, transfer and budget in this household. Categories are kept. Cannot be undone.</p>
+        <p style="color:var(--muted)">Delete every income, expense and transfer in this household. Categories and fixed bills are kept. Cannot be undone.</p>
         <button class="btn" style="border-color:var(--danger);color:var(--danger)" onclick="resetAll()">Erase all entries</button>
       </div>
     </div>`;
     }
-    function backup() { download(`household-finance-backup-${todayISO()}.json`, new Blob([JSON.stringify({ household: state.household, incomes: state.incomes, expenses: state.expenses, transfers: state.transfers, categories: state.categories, budgets: state.budgets }, null, 2)], { type: "application/json" })); }
-    function resetAll() { openModal("Erase all entries?", "<p>All income, expenses, transfers and budgets in this household will be permanently removed.</p>", `<button class="btn" onclick="closeModal()">Cancel</button><button class="btn" style="border-color:var(--danger);color:var(--danger)" onclick="confirmReset()">Erase</button>`); }
-    async function confirmReset() { const hid = state.household.id; await Promise.all([sb.from("incomes").delete().eq("household_id", hid), sb.from("expenses").delete().eq("household_id", hid), sb.from("transfers").delete().eq("household_id", hid), sb.from("budgets").delete().eq("household_id", hid)]); await loadAll(); closeModal(); switchView("dashboard"); toast("All entries erased"); }
+    function backup() { download(`household-finance-backup-${todayISO()}.json`, new Blob([JSON.stringify({ household: state.household, incomes: state.incomes, expenses: state.expenses, transfers: state.transfers, categories: state.categories, catQty: state.catQty, fixedBills: state.fixedBills }, null, 2)], { type: "application/json" })); }
+    function resetAll() { openModal("Erase all entries?", "<p>All income, expenses and transfers in this household will be permanently removed. Categories and fixed bills stay.</p>", `<button class="btn" onclick="closeModal()">Cancel</button><button class="btn" style="border-color:var(--danger);color:var(--danger)" onclick="confirmReset()">Erase</button>`); }
+    async function confirmReset() { const hid = state.household.id; await Promise.all([sb.from("incomes").delete().eq("household_id", hid), sb.from("expenses").delete().eq("household_id", hid), sb.from("transfers").delete().eq("household_id", hid)]); await loadAll(); closeModal(); switchView("dashboard"); toast("All entries erased"); }
     async function postRecurring() {
       const m = curMonth(), hid = state.household.id, stamp = todayISO(); const ins = [];
       state.incomes.filter(i => i.recurring).forEach(i => { const ex = state.incomes.some(x => monthKey(x.date) === m && x.source === i.source && x.user === i.user && Number(x.amount) === Number(i.amount) && x.id !== i.id); if (!ex) ins.push({ type: "incomes", row: { household_id: hid, payer: i.user, amount: Number(i.amount), date: stamp, source: i.source, notes: i.notes, recurring: false } }); });
@@ -643,6 +715,7 @@
 
     /* ---------- Expense (single or multi-item bill) ---------- */
     let billItems = [];
+    function catOptions(sel) { return Object.keys(state.categories).map(c => `<option ${sel === c ? 'selected' : ''}>${c}</option>`).join("") + `<option value="__new__">➕ Add new category…</option>`; }
     function expenseModal(id) {
       billItems = [];
       const it = id ? state.expenses.find(e => e.id === id) : { amount: "", date: todayISO(), category: Object.keys(state.categories)[0] || "", subcategory: "", quantity: "", unit: "Units", notes: "", user: state.me, recurring: false };
@@ -651,9 +724,27 @@
     <div id="singleBox">
       <div class="row"><div class="field"><label>Amount (₹)</label><input id="eAmt" type="number" min="0" step="0.01" value="${it.amount}"></div>
         <div class="field"><label>Date</label><input id="eDate" type="date" value="${it.date}"></div></div>
-      <div class="row"><div class="field"><label>Category</label><select id="eCat" onchange="fillSubs()">${Object.keys(state.categories).map(c => `<option ${it.category === c ? 'selected' : ''}>${c}</option>`).join("")}</select></div>
-        <div class="field"><label>Sub-category</label><select id="eSub"></select></div></div>
-      <div class="row"><div class="field"><label>Quantity</label><input id="eQty" type="number" min="0" step="0.01" placeholder="e.g. 2" value="${it.quantity || ''}"></div>
+
+      <div class="field"><label>Category</label>
+        <div style="display:flex;gap:8px"><select id="eCat" style="flex:1" onchange="onCatChange()">${catOptions(it.category)}</select>
+          <button class="btn sm" type="button" title="New category" onclick="showNewCat(true)">＋</button></div></div>
+      <div class="inline-add" id="newCatRow" style="display:none">
+        <input id="newCatName" placeholder="New category name">
+        <label class="check" style="font-size:13px"><input id="newCatQty" type="checkbox"> has Qty/Units</label>
+        <button class="btn sm primary" type="button" onclick="addCatInline()">Add</button>
+        <button class="btn sm" type="button" onclick="showNewCat(false)">Cancel</button>
+      </div>
+
+      <div class="field"><label>Sub-category</label>
+        <div style="display:flex;gap:8px"><select id="eSub" style="flex:1"></select>
+          <button class="btn sm" type="button" title="New sub-category" onclick="showNewSub(true)">＋</button></div></div>
+      <div class="inline-add" id="newSubRow" style="display:none">
+        <input id="newSubName" placeholder="New sub-category name">
+        <button class="btn sm primary" type="button" onclick="addSubInline()">Add</button>
+        <button class="btn sm" type="button" onclick="showNewSub(false)">Cancel</button>
+      </div>
+
+      <div class="row" id="qtyRow"><div class="field"><label>Quantity</label><input id="eQty" type="number" min="0" step="0.01" placeholder="e.g. 2" value="${it.quantity || ''}"></div>
         <div class="field"><label>Unit</label><select id="eUnit">${UNITS.map(u => `<option ${it.unit === u ? 'selected' : ''}>${u}</option>`).join("")}</select></div></div>
     </div>
     <div id="billBox" style="display:none">
@@ -668,7 +759,7 @@
       <div class="field" style="justify-content:flex-end" id="recWrap"><label class="check"><input id="eRec" type="checkbox" ${it.recurring ? 'checked' : ''}> Repeat monthly</label></div></div>
     <div class="field"><label>Description / notes (optional)</label><textarea id="eNotes" rows="2">${it.notes || ""}</textarea></div>`,
         `<button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveExpense('${id || ""}')">Save expense</button>`);
-      fillSubs(it.subcategory);
+      fillSubs(it.subcategory); updateQtyRow();
     }
     function toggleBill() {
       const on = $("#eBill").checked;
@@ -677,24 +768,51 @@
       $("#recWrap").style.display = on ? "none" : "flex";
       if (on && !billItems.length) addBillItem();
     }
+    function onCatChange() {
+      const sel = $("#eCat");
+      if (sel.value === "__new__") { showNewCat(true); sel.value = Object.keys(state.categories)[0] || ""; }
+      fillSubs(); updateQtyRow();
+    }
+    function updateQtyRow() { const row = $("#qtyRow"); if (!row) return; const show = !!state.catQty[$("#eCat").value]; row.style.display = show ? "grid" : "none"; }
     function fillSubs(selected) { const c = $("#eCat").value, subs = state.categories[c] || []; $("#eSub").innerHTML = `<option value="">— none —</option>` + subs.map(s => `<option ${selected === s ? 'selected' : ''}>${s}</option>`).join(""); }
+    function rebuildCatSelect(sel) { $("#eCat").innerHTML = catOptions(sel); }
+    function showNewCat(b) { $("#newCatRow").style.display = b ? "flex" : "none"; if (b) { $("#newCatName").value = ""; $("#newCatQty").checked = false; $("#newCatName").focus(); } }
+    function showNewSub(b) { $("#newSubRow").style.display = b ? "flex" : "none"; if (b) { $("#newSubName").value = ""; $("#newSubName").focus(); } }
+    async function addCatInline() {
+      const name = $("#newCatName").value.trim(); if (!name) return toast("Type a category name.", "warn");
+      if (state.categories[name]) return toast("That category already exists.", "warn");
+      const { error } = await sb.from("categories").insert({ household_id: state.household.id, name, subcategories: [], tracks_qty: $("#newCatQty").checked });
+      if (error) return toast(error.message, "danger");
+      await loadAll(); rebuildCatSelect(name); showNewCat(false); fillSubs(); updateQtyRow(); toast(`Category “${name}” added`);
+    }
+    async function addSubInline() {
+      const c = $("#eCat").value, name = $("#newSubName").value.trim(); if (!name) return toast("Type a sub-category name.", "warn");
+      const subs = [...(state.categories[c] || [])]; if (!subs.includes(name)) subs.push(name);
+      const { error } = await sb.from("categories").update({ subcategories: subs }).eq("household_id", state.household.id).eq("name", c);
+      if (error) return toast(error.message, "danger");
+      await loadAll(); fillSubs(name); showNewSub(false); toast(`Sub-category “${name}” added`);
+    }
     function addBillItem() { billItems.push({ category: Object.keys(state.categories)[0] || "Grocery", name: "", qty: "", unit: "Units", amount: "" }); renderBillItems(); }
     function removeBillItem(i) { billItems.splice(i, 1); renderBillItems(); }
+    function setItemCat(i, v) { billItems[i].category = v; renderBillItems(); }
     function billTotal() { return billItems.reduce((a, b) => a + Number(b.amount || 0), 0); }
     function renderBillItems() {
       const c = $("#billItems"); if (!c) return;
-      c.innerHTML = billItems.map((it, i) => `<div class="bill-item-card">
+      c.innerHTML = billItems.map((it, i) => {
+        const showQty = !!state.catQty[it.category];
+        return `<div class="bill-item-card">
     <button class="icon-btn remove-btn" type="button" onclick="removeBillItem(${i})">✕</button>
     <div class="field" style="margin-bottom:10px"><label>Item name</label><input placeholder="e.g. Milk" value="${it.name}" oninput="billItems[${i}].name=this.value"></div>
-    <div class="row" style="margin-bottom:10px">
-      <div class="field" style="margin:0"><label>Category</label><select onchange="billItems[${i}].category=this.value">${Object.keys(state.categories).map(cat => `<option ${it.category === cat ? 'selected' : ''}>${cat}</option>`).join("")}</select></div>
+    <div class="row" style="margin-bottom:${showQty ? '10px' : '0'}">
+      <div class="field" style="margin:0"><label>Category</label><select onchange="setItemCat(${i},this.value)">${Object.keys(state.categories).map(cat => `<option ${it.category === cat ? 'selected' : ''}>${cat}</option>`).join("")}</select></div>
       <div class="field" style="margin:0"><label>Amount (₹)</label><input type="number" min="0" step="0.01" placeholder="0" value="${it.amount}" oninput="billItems[${i}].amount=this.value;updateBillTotal()"></div>
     </div>
-    <div class="row" style="margin:0">
+    ${showQty ? `<div class="row" style="margin:0">
       <div class="field" style="margin:0"><label>Quantity</label><input type="number" min="0" step="0.01" placeholder="e.g. 2" value="${it.qty}" oninput="billItems[${i}].qty=this.value"></div>
       <div class="field" style="margin:0"><label>Unit</label><select onchange="billItems[${i}].unit=this.value">${UNITS.map(u => `<option ${it.unit === u ? 'selected' : ''}>${u}</option>`).join("")}</select></div>
-    </div>
-    </div>`).join("") || '<div class="empty" style="padding:14px 0">No items yet — tap “+ Add item”.</div>';
+    </div>` : ''}
+    </div>`;
+      }).join("") || '<div class="empty" style="padding:14px 0">No items yet — tap “+ Add item”.</div>';
       updateBillTotal();
     }
     function updateBillTotal() { const el = $("#billTotal"); if (el) el.textContent = fmt(billTotal()); }
@@ -705,51 +823,56 @@
         const items = billItems.filter(it => Number(it.amount) > 0 && it.name.trim());
         if (!items.length) return toast("Add at least one item with a name and amount.", "warn");
         const date = $("#eDateB").value, store = $("#eStore").value.trim() || null, bill_id = uid();
-        const rows = items.map(it => ({ household_id: hid, payer, amount: Number(it.amount), date, category: it.category, subcategory: it.name.trim(), quantity: it.qty ? Number(it.qty) : null, unit: it.unit, notes, recurring: false, bill_id, store }));
+        const rows = items.map(it => { const tq = !!state.catQty[it.category]; return { household_id: hid, payer, amount: Number(it.amount), date, category: it.category, subcategory: it.name.trim(), quantity: tq && it.qty ? Number(it.qty) : null, unit: tq ? it.unit : null, notes, recurring: false, bill_id, store }; });
         const { error } = await sb.from("expenses").insert(rows); if (error) return toast(error.message, "danger");
       } else {
         const amt = Number($("#eAmt").value); if (!amt || amt <= 0) return toast("Enter a valid amount.", "warn");
-        const payload = { household_id: hid, payer, amount: amt, date: $("#eDate").value, category: $("#eCat").value, subcategory: $("#eSub").value || null, quantity: $("#eQty").value ? Number($("#eQty").value) : null, unit: $("#eUnit").value, notes, recurring: $("#eRec").checked };
+        const cat = $("#eCat").value, tq = !!state.catQty[cat];
+        const payload = { household_id: hid, payer, amount: amt, date: $("#eDate").value, category: cat, subcategory: $("#eSub").value || null, quantity: tq && $("#eQty").value ? Number($("#eQty").value) : null, unit: tq ? $("#eUnit").value : null, notes, recurring: $("#eRec").checked };
         let error; if (id) ({ error } = await sb.from("expenses").update(payload).eq("id", id)); else ({ error } = await sb.from("expenses").insert(payload));
         if (error) return toast(error.message, "danger");
       }
       await loadAll(); closeModal(); renderCurrent();
       if (balance() < 0) toast(`Heads up: combined balance is now negative (${fmt(balance())}).`, "danger");
       else toast("Expense saved");
-      const sp = categorySpend(curMonth());
-      const over = Object.keys(state.budgets).filter(c => state.budgets[c] > 0 && (sp[c] || 0) > state.budgets[c]);
-      if (over.length) toast(`Over budget this month: ${over.join(", ")}.`, "warn");
     }
 
-    /* ---------- categories ---------- */
+    /* ---------- categories (add/edit) ---------- */
     function categoryModal(enc) {
-      const editing = !!enc, name = enc ? decodeURIComponent(enc) : "", subs = editing ? state.categories[name].join(", ") : "";
+      const editing = !!enc, name = enc ? decodeURIComponent(enc) : "", subs = editing ? (state.categories[name] || []).join(", ") : "", qty = editing ? !!state.catQty[name] : false;
       openModal(editing ? "Edit category" : "Add category", `
     <div class="field"><label>Category name</label><input id="cName" value="${name}"></div>
-    <div class="field"><label>Sub-categories (comma separated)</label><textarea id="cSubs" rows="3" placeholder="Milk, Bread, Vegetables">${subs}</textarea></div>`,
+    <div class="field"><label>Sub-categories (comma separated)</label><textarea id="cSubs" rows="3" placeholder="Milk, Bread, Vegetables">${subs}</textarea></div>
+    <label class="check"><input id="cQty" type="checkbox" ${qty ? 'checked' : ''}> Track Quantity &amp; Units for this category</label>`,
         `<button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveCategory('${enc || ""}')">Save</button>`);
     }
     async function saveCategory(enc) {
       const newName = $("#cName").value.trim(); if (!newName) return toast("Enter a category name.", "warn");
-      const subs = $("#cSubs").value.split(",").map(s => s.trim()).filter(Boolean), hid = state.household.id;
+      const subs = $("#cSubs").value.split(",").map(s => s.trim()).filter(Boolean), qty = $("#cQty").checked, hid = state.household.id;
       let error;
       if (enc) {
         const old = decodeURIComponent(enc);
         if (old !== newName) {
           if (state.categories[newName]) return toast("That category name already exists.", "warn");
-          ({ error } = await sb.from("categories").update({ name: newName, subcategories: subs }).eq("household_id", hid).eq("name", old));
+          ({ error } = await sb.from("categories").update({ name: newName, subcategories: subs, tracks_qty: qty }).eq("household_id", hid).eq("name", old));
           if (!error) await sb.from("expenses").update({ category: newName }).eq("household_id", hid).eq("category", old);
-        } else ({ error } = await sb.from("categories").update({ subcategories: subs }).eq("household_id", hid).eq("name", newName));
+        } else ({ error } = await sb.from("categories").update({ subcategories: subs, tracks_qty: qty }).eq("household_id", hid).eq("name", newName));
       } else {
         if (state.categories[newName]) return toast("That category already exists.", "warn");
-        ({ error } = await sb.from("categories").insert({ household_id: hid, name: newName, subcategories: subs }));
+        ({ error } = await sb.from("categories").insert({ household_id: hid, name: newName, subcategories: subs, tracks_qty: qty }));
       }
       if (error) return toast(error.message, "danger");
-      await loadAll(); closeModal(); renderCategories(); toast("Category saved");
+      await loadAll(); closeModal(); renderBills(); toast("Category saved");
     }
     function addSubModal(enc) { openModal(`Add sub-category to ${decodeURIComponent(enc)}`, `<div class="field"><label>Sub-category name</label><input id="subName" placeholder="e.g. Coffee"></div>`, `<button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveSub('${enc}')">Add</button>`); }
-    async function saveSub(enc) { const c = decodeURIComponent(enc), v = $("#subName").value.trim(); if (!v) return; const subs = [...(state.categories[c] || [])]; if (!subs.includes(v)) subs.push(v); const { error } = await sb.from("categories").update({ subcategories: subs }).eq("household_id", state.household.id).eq("name", c); if (error) return toast(error.message, "danger"); await loadAll(); closeModal(); renderCategories(); toast("Sub-category added"); }
-    async function delCategory(enc) { const c = decodeURIComponent(enc); if (state.expenses.some(e => e.category === c)) return toast("Can't delete: expenses use this category.", "warn"); await sb.from("budgets").delete().eq("household_id", state.household.id).eq("category", c); const { error } = await sb.from("categories").delete().eq("household_id", state.household.id).eq("name", c); if (error) return toast(error.message, "danger"); await loadAll(); renderCategories(); toast("Category deleted"); }
+    async function saveSub(enc) { const c = decodeURIComponent(enc), v = $("#subName").value.trim(); if (!v) return; const subs = [...(state.categories[c] || [])]; if (!subs.includes(v)) subs.push(v); const { error } = await sb.from("categories").update({ subcategories: subs }).eq("household_id", state.household.id).eq("name", c); if (error) return toast(error.message, "danger"); await loadAll(); closeModal(); renderBills(); toast("Sub-category added"); }
+    function delCategory(enc) {
+      const c = decodeURIComponent(enc);
+      if (state.expenses.some(e => e.category === c)) return toast("Can't delete: expenses use this category.", "warn");
+      if (state.fixedBills.some(b => b.category === c)) return toast("Can't delete: a fixed bill uses this category.", "warn");
+      openModal("Delete category?", `<p>Delete “${c}”?</p>`, `<button class="btn" onclick="closeModal()">Cancel</button><button class="btn" style="border-color:var(--danger);color:var(--danger)" onclick="confirmDelCategory('${enc}')">Delete</button>`);
+    }
+    async function confirmDelCategory(enc) { const c = decodeURIComponent(enc); const { error } = await sb.from("categories").delete().eq("household_id", state.household.id).eq("name", c); if (error) return toast(error.message, "danger"); await loadAll(); closeModal(); renderBills(); toast("Category deleted"); }
 
     /* ---------- delete tx ---------- */
     async function delTx(kind, id) { const { error } = await sb.from(kind).delete().eq("id", id); if (error) return toast(error.message, "danger"); await loadAll(); renderCurrent(); toast("Deleted"); }
